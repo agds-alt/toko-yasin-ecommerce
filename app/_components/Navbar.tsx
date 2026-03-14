@@ -57,7 +57,7 @@ export default function Navbar() {
               fontFamily: 'Urbanist',
               letterSpacing: '-0.02em'
             }}>
-              TOKO YASIN
+              TOKO BUKU ABDUL
             </span>
           </Link>
 

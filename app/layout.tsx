@@ -6,41 +6,41 @@ import BottomNav from "./_components/BottomNav";
 
 export const metadata: Metadata = {
   title: {
-    default: "Toko Yasin - Buku Yasin & Al-Qur'an",
-    template: "%s | Toko Yasin",
+    default: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
+    template: "%s | Toko Buku Abdul",
   },
   description: "Toko online terpercaya untuk Buku Yasin, Al-Qur'an berbagai ukuran, dan perlengkapan ibadah. Pembayaran manual transfer bank dengan konfirmasi cepat.",
-  keywords: ["buku yasin", "al-quran", "mushaf", "quran", "yasin", "toko yasin", "beli yasin online"],
-  authors: [{ name: "Toko Yasin" }],
-  creator: "Toko Yasin",
-  publisher: "Toko Yasin",
+  keywords: ["buku yasin", "al-quran", "mushaf", "quran", "yasin", "toko buku abdul", "beli yasin online"],
+  authors: [{ name: "Toko Buku Abdul" }],
+  creator: "Toko Buku Abdul",
+  publisher: "Toko Buku Abdul",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://tokoyasin.com",
-    siteName: "Toko Yasin",
-    title: "Toko Yasin - Buku Yasin & Al-Qur'an",
+    url: "https://tokobukuabdul.com",
+    siteName: "Toko Buku Abdul",
+    title: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
     description: "Toko online terpercaya untuk Buku Yasin dan Al-Qur'an berkualitas",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Toko Yasin",
+        alt: "Toko Buku Abdul",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toko Yasin - Buku Yasin & Al-Qur'an",
+    title: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
     description: "Toko online terpercaya untuk Buku Yasin dan Al-Qur'an berkualitas",
     images: ["/og-image.jpg"],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Toko Yasin",
+    title: "Toko Buku Abdul",
   },
   robots: {
     index: true,

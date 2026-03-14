@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'toko-yasin-v1';
+const CACHE_NAME = 'toko-buku-abdul-v1';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_CACHE_URLS = [
@@ -88,7 +88,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification event
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : 'New notification from Toko Yasin',
+    body: event.data ? event.data.text() : 'New notification from Toko Buku Abdul',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     vibrate: [100, 50, 100],
@@ -99,7 +99,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Toko Yasin', options)
+    self.registration.showNotification('Toko Buku Abdul', options)
   );
 });
 
