@@ -97,9 +97,9 @@ export default function OrdersPage() {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-2">📋 Riwayat Pesanan</h1>
-            <p className="text-gray-600">
+          <div className="mb-4 sm:mb-8">
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-1 sm:mb-2">📋 Riwayat Pesanan</h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
               {ordersList.length > 0
                 ? `${ordersList.length} pesanan`
                 : "Belum ada pesanan"}
@@ -108,11 +108,11 @@ export default function OrdersPage() {
 
           {/* Status Filter */}
           {ordersList.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
-              <div className="flex flex-wrap gap-2">
+            <div className="bg-white rounded-xl shadow-md p-2 sm:p-4 mb-4 sm:mb-6">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setFilterStatus(null)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                  className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-[0.7rem] sm:text-sm font-semibold transition-all ${
                     !filterStatus
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -127,13 +127,15 @@ export default function OrdersPage() {
                     <button
                       key={status}
                       onClick={() => setFilterStatus(status)}
-                      className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                      className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-[0.7rem] sm:text-sm font-semibold transition-all ${
                         filterStatus === status
                           ? "bg-blue-600 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
-                      {statusText[status]} ({count})
+                      <span className="hidden sm:inline">{statusText[status]}</span>
+                      <span className="sm:hidden">{status === "PAYMENT_UPLOADED" ? "📤" : statusText[status].split(" ")[0]}</span>
+                      <span className="ml-0.5 sm:ml-1">({count})</span>
                     </button>
                   );
                 })}
@@ -167,19 +169,19 @@ export default function OrdersPage() {
                 return (
                   <div
                     key={order.id}
-                    className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-gray-100"
+                    className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all border-2 border-gray-100"
                   >
                     {/* Order Header */}
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-100">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-gray-900">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-4 border-b-2 border-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <h3 className="text-base sm:text-xl font-bold text-gray-900">
                           {order.orderNumber}
                         </h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold border-2 ${statusColors[order.status]}`}>
+                        <span className={`px-2.5 py-1 rounded-full text-xs sm:text-sm font-semibold border-2 ${statusColors[order.status]} w-fit`}>
                           {statusText[order.status]}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-xs sm:text-sm text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString("id-ID", {
                           day: "2-digit",
                           month: "short",
@@ -191,94 +193,93 @@ export default function OrdersPage() {
                     {/* Progress Bar */}
                     {order.status !== "CANCELLED" && (
                       <div className="mb-4">
-                        <div className="flex justify-between text-xs text-gray-600 mb-2">
-                          <span>Progress Pesanan</span>
+                        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-2">
+                          <span className="font-medium">Progress Pesanan</span>
                           <span className="font-semibold">{Math.round(progress)}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                           <div
                             className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
-                        <div className="flex justify-between mt-2 text-xs">
+                        {/* Mobile: Stack icons, Desktop: Row */}
+                        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-between text-[0.65rem] sm:text-xs">
                           <div className={`flex items-center gap-1 ${statusOrder.indexOf(order.status) >= 0 ? "text-blue-600 font-semibold" : "text-gray-400"}`}>
-                            <Clock className="w-3 h-3" />
-                            <span>Pending</span>
+                            <Clock className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">Pending</span>
                           </div>
                           <div className={`flex items-center gap-1 ${statusOrder.indexOf(order.status) >= 2 ? "text-blue-600 font-semibold" : "text-gray-400"}`}>
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Dikonfirmasi</span>
+                            <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">Konfirmasi</span>
                           </div>
                           <div className={`flex items-center gap-1 ${statusOrder.indexOf(order.status) >= 3 ? "text-blue-600 font-semibold" : "text-gray-400"}`}>
-                            <Package className="w-3 h-3" />
-                            <span>Diproses</span>
+                            <Package className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">Proses</span>
                           </div>
                           <div className={`flex items-center gap-1 ${statusOrder.indexOf(order.status) >= 4 ? "text-blue-600 font-semibold" : "text-gray-400"}`}>
-                            <Truck className="w-3 h-3" />
-                            <span>Dikirim</span>
+                            <Truck className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">Kirim</span>
                           </div>
-                          <div className={`flex items-center gap-1 ${statusOrder.indexOf(order.status) >= 5 ? "text-green-600 font-semibold" : "text-gray-400"}`}>
-                            <ShoppingBag className="w-3 h-3" />
-                            <span>Selesai</span>
+                          <div className={`flex items-center gap-1 col-span-2 sm:col-span-1 justify-center sm:justify-start ${statusOrder.indexOf(order.status) >= 5 ? "text-green-600 font-semibold" : "text-gray-400"}`}>
+                            <ShoppingBag className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">Selesai</span>
                           </div>
                         </div>
                       </div>
                     )}
 
                     {/* Order Content */}
-                    <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="space-y-4">
                       {/* Product Preview */}
-                      <div className="flex items-center gap-3 flex-1">
+                      <div className="flex items-center gap-3">
                         <img
                           src={productImage}
                           alt="Product"
-                          className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-gray-200 flex-shrink-0"
                         />
-                        <div>
-                          <p className="font-semibold text-gray-900">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm sm:text-base text-gray-900">
                             {order.items.length} Produk
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">
                             {firstItem?.product?.name}
                             {order.items.length > 1 && ` +${order.items.length - 1} lainnya`}
                           </p>
-                          <p className="text-sm font-semibold text-blue-600 mt-1">
+                          <p className="text-sm sm:text-base font-bold text-blue-600 mt-1">
                             Total: Rp {Number(order.totalAmount).toLocaleString("id-ID")}
                           </p>
                         </div>
                       </div>
 
                       {/* Order Details */}
-                      <div className="flex-1 space-y-2 text-sm">
+                      <div className="space-y-2 text-xs sm:text-sm bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start gap-2">
-                          <span className="font-semibold text-gray-700 min-w-[80px]">📍 Alamat:</span>
-                          <span className="text-gray-600">{order.shippingAddress}</span>
+                          <span className="font-semibold text-gray-700 flex-shrink-0">📍 Alamat:</span>
+                          <span className="text-gray-600 break-words">{order.shippingAddress}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-700 min-w-[80px]">📞 Telepon:</span>
+                          <span className="font-semibold text-gray-700 flex-shrink-0">📞 Telepon:</span>
                           <span className="text-gray-600">{order.shippingPhone}</span>
                         </div>
                         {order.notes && (
                           <div className="flex items-start gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[80px]">📝 Catatan:</span>
-                            <span className="text-gray-600">{order.notes}</span>
+                            <span className="font-semibold text-gray-700 flex-shrink-0">📝 Catatan:</span>
+                            <span className="text-gray-600 break-words">{order.notes}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Action Button */}
-                      <div className="flex items-center">
-                        <button
-                          onClick={() => router.push(`/orders/${order.id}`)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 whitespace-nowrap"
-                        >
-                          Lihat Detail
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => router.push(`/orders/${order.id}`)}
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                      >
+                        Lihat Detail
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 );
