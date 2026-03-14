@@ -4,13 +4,13 @@ import { trpc } from "@/lib/trpc";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "./_components/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "./_contexts/CartContext";
 
-export default function Home() {
+function HomeContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const { addToCart } = useCart();
@@ -574,5 +574,23 @@ export default function Home() {
         </div>
       </footer>
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Memuat...</p>
+          </div>
+        </div>
+      </>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
