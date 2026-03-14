@@ -23,7 +23,7 @@ export const orderRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Get cart with items
       const cart = await ctx.prisma.cart.findUnique({
-        where: { userId: ctx.session.user.id },
+        where: { userId: (ctx.session.user as any).id },
         include: {
           items: {
             include: {
@@ -52,7 +52,7 @@ export const orderRouter = router({
 
       // Calculate total
       const totalAmount = cart.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
+        (sum, item) => sum + Number(item.product.price) * item.quantity,
         0
       );
 
@@ -65,7 +65,7 @@ export const orderRouter = router({
         const newOrder = await tx.order.create({
           data: {
             orderNumber,
-            userId: ctx.session.user.id,
+            userId: (ctx.session.user as any).id,
             totalAmount,
             shippingAddress: input.shippingAddress,
             shippingPhone: input.shippingPhone,
@@ -133,7 +133,7 @@ export const orderRouter = router({
       const limit = input?.limit || 10;
       const cursor = input?.cursor;
       const orders = await ctx.prisma.order.findMany({
-        where: { userId: ctx.session.user.id },
+        where: { userId: (ctx.session.user as any).id },
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         include: {
@@ -198,10 +198,10 @@ export const orderRouter = router({
       }
 
       // Check authorization
-      if (order.userId !== ctx.session.user.id) {
+      if (order.userId !== (ctx.session.user as any).id) {
         // Allow admin to view any order
         const user = await ctx.prisma.user.findUnique({
-          where: { id: ctx.session.user.id },
+          where: { id: (ctx.session.user as any).id },
         });
 
         if (user?.role !== "ADMIN") {

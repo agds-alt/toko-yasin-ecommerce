@@ -351,10 +351,10 @@ export default function EditProductPage() {
             </button>
             <button
               type="submit"
-              disabled={updateProduct.isLoading || uploading}
+              disabled={updateProduct.isPending || uploading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all"
             >
-              {updateProduct.isLoading ? "Menyimpan..." : "Update Produk"}
+              {updateProduct.isPending ? "Menyimpan..." : "Update Produk"}
             </button>
           </div>
         </div>

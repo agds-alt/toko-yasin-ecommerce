@@ -66,7 +66,7 @@ export default function CartPage() {
   }
 
   const items = cart?.items || [];
-  const totalAmount = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const totalAmount = items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
@@ -128,7 +128,7 @@ export default function CartPage() {
                 <div className="flex justify-end">
                   <button
                     onClick={handleClearCart}
-                    disabled={clearCart.isLoading}
+                    disabled={clearCart.isPending}
                     className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 hover:underline"
                   >
                     🗑️ Kosongkan Keranjang
@@ -170,7 +170,7 @@ export default function CartPage() {
                             </div>
                             <button
                               onClick={() => handleRemoveItem(item.id)}
-                              disabled={removeItem.isLoading}
+                              disabled={removeItem.isPending}
                               className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all ml-2"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ export default function CartPage() {
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                  disabled={item.quantity <= 1 || updateQuantity.isLoading}
+                                  disabled={item.quantity <= 1 || updateQuantity.isPending}
                                   className="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 font-bold w-8 h-8 rounded-lg transition-all"
                                 >
                                   -
@@ -195,7 +195,7 @@ export default function CartPage() {
                                 <span className="w-12 text-center font-bold text-lg">{item.quantity}</span>
                                 <button
                                   onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                  disabled={item.quantity >= item.product.stock || updateQuantity.isLoading}
+                                  disabled={item.quantity >= item.product.stock || updateQuantity.isPending}
                                   className="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 font-bold w-8 h-8 rounded-lg transition-all"
                                 >
                                   +
@@ -206,10 +206,10 @@ export default function CartPage() {
                             {/* Price */}
                             <div className="text-right">
                               <p className="text-sm text-gray-500 mb-1">
-                                Rp {item.product.price.toLocaleString("id-ID")} x {item.quantity}
+                                Rp {Number(item.product.price).toLocaleString("id-ID")} x {item.quantity}
                               </p>
                               <p className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                                Rp {(item.product.price * item.quantity).toLocaleString("id-ID")}
+                                Rp {(Number(item.product.price) * item.quantity).toLocaleString("id-ID")}
                               </p>
                             </div>
                           </div>

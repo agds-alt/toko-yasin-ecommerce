@@ -153,7 +153,7 @@ export default function Home() {
 
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                        Rp {(product.price / 1000).toFixed(0)}rb
+                        Rp {(Number(product.price) / 1000).toFixed(0)}rb
                       </span>
                     </div>
 

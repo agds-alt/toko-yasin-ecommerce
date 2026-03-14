@@ -124,7 +124,7 @@ export default function TestAPIPage() {
                   </p>
                   <div className="flex items-center gap-4">
                     <span className="font-bold">
-                      Rp {product.price.toLocaleString()}
+                      Rp {Number(product.price).toLocaleString()}
                     </span>
                     <span className="text-sm text-gray-500">
                       Stock: {product.stock}

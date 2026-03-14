@@ -160,7 +160,7 @@ export default function ProductDetailPage() {
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200">
                 <p className="text-sm text-gray-600 mb-2">Harga</p>
                 <p className="text-4xl lg:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                  Rp {product.price.toLocaleString("id-ID")}
+                  Rp {Number(product.price).toLocaleString("id-ID")}
                 </p>
               </div>
 
@@ -227,10 +227,10 @@ export default function ProductDetailPage() {
               <div className="pt-4 space-y-3">
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || addToCart.isLoading}
+                  disabled={product.stock === 0 || addToCart.isPending}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white text-lg font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3"
                 >
-                  {addToCart.isLoading ? (
+                  {addToCart.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       Menambahkan...

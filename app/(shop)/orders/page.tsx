@@ -244,7 +244,7 @@ export default function OrdersPage() {
                             {order.items.length > 1 && ` +${order.items.length - 1} lainnya`}
                           </p>
                           <p className="text-sm font-semibold text-blue-600 mt-1">
-                            Total: Rp {order.totalAmount.toLocaleString("id-ID")}
+                            Total: Rp {Number(order.totalAmount).toLocaleString("id-ID")}
                           </p>
                         </div>
                       </div>

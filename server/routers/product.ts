@@ -167,15 +167,6 @@ export const productRouter = router({
       });
     }),
 
-  // Delete product (admin only)
-  delete: adminProcedure
-    .input(z.object({ productId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.prisma.product.delete({
-        where: { id: input.productId },
-      });
-      return { success: true };
-    }),
 
   // Toggle product active status (admin only)
   toggleActive: adminProcedure

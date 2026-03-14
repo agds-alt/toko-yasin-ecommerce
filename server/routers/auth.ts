@@ -63,7 +63,7 @@ export const authRouter = router({
   // Get current user profile
   getProfile: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUnique({
-      where: { id: ctx.session.user.id },
+      where: { id: (ctx.session.user as any).id },
       select: {
         id: true,
         email: true,
@@ -96,7 +96,7 @@ export const authRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.update({
-        where: { id: ctx.session.user.id },
+        where: { id: (ctx.session.user as any).id },
         data: input,
         select: {
           id: true,

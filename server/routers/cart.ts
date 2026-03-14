@@ -11,7 +11,7 @@ export const cartRouter = router({
   // Get user's cart
   get: protectedProcedure.query(async ({ ctx }) => {
     let cart = await ctx.prisma.cart.findUnique({
-      where: { userId: ctx.session.user.id },
+      where: { userId: (ctx.session.user as any).id },
       include: {
         items: {
           include: {
@@ -29,7 +29,7 @@ export const cartRouter = router({
     if (!cart) {
       cart = await ctx.prisma.cart.create({
         data: {
-          userId: ctx.session.user.id,
+          userId: (ctx.session.user as any).id,
         },
         include: {
           items: {
@@ -85,12 +85,12 @@ export const cartRouter = router({
 
       // Get or create cart
       let cart = await ctx.prisma.cart.findUnique({
-        where: { userId: ctx.session.user.id },
+        where: { userId: (ctx.session.user as any).id },
       });
 
       if (!cart) {
         cart = await ctx.prisma.cart.create({
-          data: { userId: ctx.session.user.id },
+          data: { userId: (ctx.session.user as any).id },
         });
       }
 
@@ -147,7 +147,7 @@ export const cartRouter = router({
         include: { product: true, cart: true },
       });
 
-      if (!cartItem || cartItem.cart.userId !== ctx.session.user.id) {
+      if (!cartItem || cartItem.cart.userId !== (ctx.session.user as any).id) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Cart item not found",
@@ -178,7 +178,7 @@ export const cartRouter = router({
         include: { cart: true },
       });
 
-      if (!cartItem || cartItem.cart.userId !== ctx.session.user.id) {
+      if (!cartItem || cartItem.cart.userId !== (ctx.session.user as any).id) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Cart item not found",
@@ -195,7 +195,7 @@ export const cartRouter = router({
   // Clear cart
   clear: protectedProcedure.mutation(async ({ ctx }) => {
     const cart = await ctx.prisma.cart.findUnique({
-      where: { userId: ctx.session.user.id },
+      where: { userId: (ctx.session.user as any).id },
     });
 
     if (cart) {

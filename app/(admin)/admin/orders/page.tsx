@@ -351,10 +351,10 @@ export default function AdminOrdersPage() {
                     notes: rejectNotes,
                   });
                 }}
-                disabled={rejectPayment.isLoading}
+                disabled={rejectPayment.isPending}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all"
               >
-                {rejectPayment.isLoading ? "Menolak..." : "Tolak"}
+                {rejectPayment.isPending ? "Menolak..." : "Tolak"}
               </button>
               <button
                 onClick={() => {
@@ -363,10 +363,10 @@ export default function AdminOrdersPage() {
                     notes: verifyNotes,
                   });
                 }}
-                disabled={verifyPayment.isLoading}
+                disabled={verifyPayment.isPending}
                 className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all"
               >
-                {verifyPayment.isLoading ? "Verifikasi..." : "Verifikasi"}
+                {verifyPayment.isPending ? "Verifikasi..." : "Verifikasi"}
               </button>
             </div>
           </div>

@@ -296,10 +296,10 @@ export default function CreateProductPage() {
             </button>
             <button
               type="submit"
-              disabled={createProduct.isLoading || uploading}
+              disabled={createProduct.isPending || uploading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all"
             >
-              {createProduct.isLoading ? "Menyimpan..." : "Simpan Produk"}
+              {createProduct.isPending ? "Menyimpan..." : "Simpan Produk"}
             </button>
           </div>
         </div>

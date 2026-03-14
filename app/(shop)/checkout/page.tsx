@@ -72,7 +72,7 @@ export default function CheckoutPage() {
   }
 
   const items = cart?.items || [];
-  const totalAmount = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const totalAmount = items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
 
   // Redirect if cart empty
   if (items.length === 0) {
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
                               {item.product.name}
                             </p>
                             <p className="text-sm text-gray-600">
-                              {item.quantity} x Rp {item.product.price.toLocaleString("id-ID")}
+                              {item.quantity} x Rp {Number(item.product.price).toLocaleString("id-ID")}
                             </p>
                           </div>
                         </div>
@@ -275,10 +275,10 @@ export default function CheckoutPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={createOrder.isLoading}
+                    disabled={createOrder.isPending}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white text-lg font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                   >
-                    {createOrder.isLoading ? (
+                    {createOrder.isPending ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                         Memproses...

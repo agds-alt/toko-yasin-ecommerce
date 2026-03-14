@@ -30,7 +30,7 @@ export const paymentRouter = router({
         });
       }
 
-      if (order.userId !== ctx.session.user.id) {
+      if (order.userId !== (ctx.session.user as any).id) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Not authorized",
@@ -79,9 +79,9 @@ export const paymentRouter = router({
       }
 
       // Check authorization
-      if (order.userId !== ctx.session.user.id) {
+      if (order.userId !== (ctx.session.user as any).id) {
         const user = await ctx.prisma.user.findUnique({
-          where: { id: ctx.session.user.id },
+          where: { id: (ctx.session.user as any).id },
         });
 
         if (user?.role !== "ADMIN") {
@@ -121,7 +121,7 @@ export const paymentRouter = router({
         where: { id: input.paymentId },
         data: {
           status: "VERIFIED",
-          verifiedBy: ctx.session.user.id,
+          verifiedBy: (ctx.session.user as any).id,
           verifiedAt: new Date(),
           notes: input.notes,
         },
@@ -162,7 +162,7 @@ export const paymentRouter = router({
         where: { id: input.paymentId },
         data: {
           status: "REJECTED",
-          verifiedBy: ctx.session.user.id,
+          verifiedBy: (ctx.session.user as any).id,
           verifiedAt: new Date(),
           notes: input.notes,
         },

@@ -225,10 +225,10 @@ export default function OrderDetailPage() {
                         <div className="flex-1">
                           <h3 className="font-bold text-gray-900 mb-1">{item.product.name}</h3>
                           <p className="text-sm text-gray-600 mb-2">
-                            {item.quantity} x Rp {item.price.toLocaleString("id-ID")}
+                            {item.quantity} x Rp {Number(item.price).toLocaleString("id-ID")}
                           </p>
                           <p className="font-bold text-blue-600">
-                            Rp {(item.price * item.quantity).toLocaleString("id-ID")}
+                            Rp {(Number(item.price) * item.quantity).toLocaleString("id-ID")}
                           </p>
                         </div>
                       </div>
@@ -239,7 +239,7 @@ export default function OrderDetailPage() {
                 <div className="mt-6 pt-6 border-t-2 border-gray-200 flex justify-between items-center">
                   <span className="text-xl font-bold text-gray-900">Total</span>
                   <span className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                    Rp {order.totalAmount.toLocaleString("id-ID")}
+                    Rp {Number(order.totalAmount).toLocaleString("id-ID")}
                   </span>
                 </div>
               </div>
@@ -297,7 +297,7 @@ export default function OrderDetailPage() {
                         <div className="flex justify-between items-center bg-white p-3 rounded-lg">
                           <span className="text-sm text-gray-600">Jumlah:</span>
                           <span className="font-bold text-blue-600">
-                            Rp {order.payment.amount.toLocaleString("id-ID")}
+                            Rp {Number(order.payment.amount).toLocaleString("id-ID")}
                           </span>
                         </div>
                       </div>

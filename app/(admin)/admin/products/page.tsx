@@ -235,11 +235,11 @@ export default function AdminProductsPage() {
                 Batal
               </button>
               <button
-                onClick={() => deleteProduct.mutate({ productId: showDeleteModal })}
-                disabled={deleteProduct.isLoading}
+                onClick={() => deleteProduct.mutate({ id: showDeleteModal })}
+                disabled={deleteProduct.isPending}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all"
               >
-                {deleteProduct.isLoading ? "Menghapus..." : "Hapus"}
+                {deleteProduct.isPending ? "Menghapus..." : "Hapus"}
               </button>
             </div>
           </div>
