@@ -1,0 +1,166 @@
+// This is your Prisma schema file
+// PostgreSQL (Supabase) for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ===== USER & AUTH =====
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(CUSTOMER)
+  phone     String?
+  address   String?
+  orders    Order[]
+  cart      Cart?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// ===== PRODUCTS =====
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int         @default(0)
+  images      String[]    // PostgreSQL supports array
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([slug])
+}
+
+// ===== SHOPPING CART =====
+model Cart {
+  id        String     @id @default(cuid())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String     @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+}
+
+// ===== ORDERS & TRANSACTIONS =====
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  user            User        @relation(fields: [userId], references: [id])
+  userId          String
+  items           OrderItem[]
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  shippingAddress String
+  shippingPhone   String
+  notes           String?
+  payment         Payment?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([orderNumber])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2) // Snapshot price at order time
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum OrderStatus {
+  PENDING          // Menunggu pembayaran
+  PAYMENT_UPLOADED // Bukti transfer sudah diupload
+  CONFIRMED        // Admin konfirmasi pembayaran
+  PROCESSING       // Sedang diproses/packing
+  SHIPPED          // Sudah dikirim
+  DELIVERED        // Sudah sampai
+  CANCELLED        // Dibatalkan
+}
+
+// ===== PAYMENT (MANUAL TRANSFER) =====
+model Payment {
+  id            String        @id @default(cuid())
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       String        @unique
+  bankName      String        // Bank tujuan transfer (BCA, BNI, dll)
+  accountNumber String        // Nomor rekening tujuan
+  accountName   String        // Nama pemegang rekening
+  amount        Decimal       @db.Decimal(10, 2)
+  proofImage    String?       // Cloudinary URL bukti transfer
+  status        PaymentStatus @default(PENDING)
+  verifiedBy    String?       // Admin ID yang verifikasi
+  verifiedAt    DateTime?
+  notes         String?       // Catatan dari admin
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING  // Menunggu upload bukti
+  UPLOADED // Bukti sudah diupload, menunggu verifikasi
+  VERIFIED // Sudah diverifikasi admin
+  REJECTED // Ditolak admin (bukti tidak valid)
+}
