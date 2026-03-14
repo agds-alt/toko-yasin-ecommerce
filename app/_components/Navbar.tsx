@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, LogOut, User, Menu, X, Search, Heart, GitCompare } from "lucide-react";
+import { ShoppingCart, LogOut, User, Menu, X, Search, Heart } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { useCart } from "../_contexts/CartContext";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const { totalItems, totalPrice } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -28,12 +30,19 @@ export default function Navbar() {
     { enabled: searchQuery.length > 0 }
   );
 
-  const cartCount = 0; // TODO: Get from cart context
+  const cartCount = totalItems;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/?search=${encodeURIComponent(searchQuery)}`);
+      // Navigate to homepage with search params
+      const params = new URLSearchParams();
+      params.set('search', searchQuery);
+      if (selectedCategory !== 'all') {
+        params.set('category', selectedCategory);
+      }
+      router.push(`/?${params.toString()}`);
+      setSearchQuery(""); // Clear search after navigation
     }
   };
 
@@ -82,9 +91,9 @@ export default function Navbar() {
                 </div>
 
                 {/* Search Input */}
-                <input
+<input
                   type="text"
-                  placeholder="Search entire store..."
+                  placeholder="Cari produk di toko..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
@@ -142,7 +151,7 @@ export default function Navbar() {
                   ) : (
                     <div className="p-8 text-center" style={{color: 'var(--gray-60)'}}>
                       <Search className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                      <p>No products found</p>
+                      <p>Produk tidak ditemukan</p>
                     </div>
                   )}
                 </div>
@@ -154,12 +163,12 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {/* Account */}
             <Link
-              href={session ? "/orders" : "/auth/login"}
+              href={session ? "/profile" : "/auth/login"}
               className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group"
               style={{color: 'var(--gray-60)'}}
             >
               <User className="w-5 h-5 mb-0.5" />
-              <span className="text-xs font-medium">Account</span>
+              <span className="text-xs font-medium">Akun</span>
             </Link>
 
             {/* Wishlist */}
@@ -169,17 +178,7 @@ export default function Navbar() {
               style={{color: 'var(--gray-60)'}}
             >
               <Heart className="w-5 h-5 mb-0.5" />
-              <span className="text-xs font-medium">Wishlist</span>
-            </Link>
-
-            {/* Compare */}
-            <Link
-              href="/compare"
-              className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group"
-              style={{color: 'var(--gray-60)'}}
-            >
-              <GitCompare className="w-5 h-5 mb-0.5" />
-              <span className="text-xs font-medium">Compare</span>
+              <span className="text-xs font-medium">Favorit</span>
             </Link>
 
             {/* Cart with Total */}
@@ -198,10 +197,10 @@ export default function Navbar() {
               </div>
               <div className="text-left">
                 <p className="text-xs" style={{color: 'var(--gray-60)'}}>
-                  {cartCount} item(s)
+                  {cartCount} item
                 </p>
                 <p className="text-sm font-bold" style={{color: 'var(--gray-900)'}}>
-                  Rp 0
+                  Rp {totalPrice.toLocaleString('id-ID')}
                 </p>
               </div>
             </Link>
@@ -271,7 +270,7 @@ export default function Navbar() {
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Cari produk..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pl-4 pr-12 text-sm border rounded-full outline-none focus:border-primary"
@@ -296,7 +295,7 @@ export default function Navbar() {
               className="block px-4 py-2 text-sm font-medium transition-colors hover:text-gray-900"
               style={{color: pathname === "/" ? 'var(--primary)' : 'var(--gray-60)'}}
             >
-              Home
+              Beranda
             </Link>
             <Link
               href="/#products"
@@ -304,7 +303,7 @@ export default function Navbar() {
               className="block px-4 py-2 text-sm font-medium transition-colors hover:text-gray-900"
               style={{color: 'var(--gray-60)'}}
             >
-              Products
+              Produk
             </Link>
             {session ? (
               <>
@@ -329,7 +328,7 @@ export default function Navbar() {
                 >
                   <div className="flex items-center gap-2">
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    Keluar
                   </div>
                 </button>
               </>
@@ -361,7 +360,7 @@ export default function Navbar() {
                     e.currentTarget.style.textDecoration = 'none';
                   }}
                 >
-                  Register
+                  Daftar
                 </Link>
               </>
             )}

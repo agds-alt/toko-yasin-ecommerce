@@ -6,35 +6,48 @@ import Image from "next/image";
 import Navbar from "./_components/Navbar";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCart } from "./_contexts/CartContext";
 
 export default function Home() {
-  const { data, isLoading } = trpc.product.getAll.useQuery({});
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { addToCart } = useCart();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('search') || undefined;
+  const categoryFilter = searchParams.get('category') || undefined;
+
+  const { data, isLoading } = trpc.product.getAll.useQuery({
+    search: searchQuery,
+    categoryId: categoryFilter
+  });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  // Hero slides data - using HD placeholder images
+  // Hero slides data - using HD Al-Quran and Islamic book images
   const heroSlides = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=600&fit=crop",
-      title: "PRODUK TERBARU",
-      subtitle: "Koleksi Pilihan Berkualitas",
+      image: "/images/quran-slide-1.jpg",
+      title: "AL-QUR'AN BERKUALITAS",
+      subtitle: "Koleksi Al-Qur'an Pilihan",
       buttonText: "Lihat Koleksi",
       buttonLink: "#products"
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1920&h=600&fit=crop",
-      title: "PENAWARAN SPESIAL",
+      image: "/images/quran-slide-2.jpg",
+      title: "BUKU YASIN & TAHLIL",
       subtitle: "Harga Terbaik Untuk Anda",
       buttonText: "Belanja Sekarang",
       buttonLink: "#products"
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=1920&h=600&fit=crop",
+      image: "/images/quran-slide-3.jpg",
       title: "KUALITAS TERJAMIN",
-      subtitle: "Produk Original & Bergaransi",
+      subtitle: "Produk Islami Original & Bergaransi",
       buttonText: "Jelajahi",
       buttonLink: "#products"
     }
@@ -289,6 +302,14 @@ export default function Home() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+
+                      if (!session) {
+                        router.push('/auth/login');
+                        return;
+                      }
+
+                      // TODO: Add to wishlist
+                      router.push('/wishlist');
                     }}
                   >
                     <Heart className="w-4 h-4" style={{color: 'var(--gray-60)'}} />
@@ -381,7 +402,29 @@ export default function Home() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        alert(`Menambahkan ${quantity}x ${product.name} ke keranjang`);
+
+                        if (!session) {
+                          router.push('/auth/login');
+                          return;
+                        }
+
+                        // Add to cart
+                        const images = typeof product.images === "string"
+                          ? JSON.parse(product.images)
+                          : product.images;
+                        const imageUrl = images && images[0] ? images[0] : "/placeholder.png";
+
+                        addToCart({
+                          productId: product.id,
+                          name: product.name,
+                          price: Number(product.price),
+                          quantity: quantity,
+                          image: imageUrl,
+                          slug: product.slug
+                        });
+
+                        // Show success feedback
+                        alert(`✓ ${quantity}x ${product.name} ditambahkan ke keranjang!`);
                       }}
                       className="w-full py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full transition-all hover:bg-gray-800 flex items-center justify-center gap-2"
                     >
@@ -393,6 +436,13 @@ export default function Home() {
                     <div className="flex items-center justify-between mt-3 text-xs">
                       <button className="flex items-center gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
                         e.preventDefault();
+
+                        if (!session) {
+                          router.push('/auth/login');
+                          return;
+                        }
+
+                        // TODO: Implement checkout functionality
                         alert(`Beli sekarang: ${product.name}`);
                       }}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,7 +452,8 @@ export default function Home() {
                       </button>
                       <button className="flex items-center gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
                         e.preventDefault();
-                        alert('Tanya produk');
+                        // TODO: Implement WhatsApp or contact functionality
+                        window.open(`https://wa.me/6281234567890?text=Halo, saya ingin bertanya tentang produk ${encodeURIComponent(product.name)}`, '_blank');
                       }}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

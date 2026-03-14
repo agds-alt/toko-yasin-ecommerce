@@ -6,20 +6,17 @@ import { Home, ShoppingCart, Package, User, LayoutDashboard, Search, X } from "l
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { useCart } from "../_contexts/CartContext";
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const { totalItems } = useCart();
   const isAdmin = (session?.user as any)?.role === "ADMIN";
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotFound, setShowNotFound] = useState(false);
-
-  // Don't show bottom nav on auth pages
-  if (pathname?.startsWith("/auth")) {
-    return null;
-  }
 
   // Search functionality
   const { data: searchData, isLoading: isSearching } = trpc.product.getAll.useQuery(
@@ -37,6 +34,11 @@ export default function BottomNav() {
       setShowNotFound(false);
     }
   }, [searchData, searchQuery, isSearching]);
+
+  // Don't show bottom nav on auth pages
+  if (pathname?.startsWith("/auth")) {
+    return null;
+  }
 
   const customerNavItems = [
     {
@@ -69,9 +71,9 @@ export default function BottomNav() {
     },
     {
       name: session ? "Profile" : "Login",
-      href: session ? "/orders" : "/auth/login",
+      href: session ? "/profile" : "/auth/login",
       icon: User,
-      active: false,
+      active: pathname === "/profile",
       onClick: undefined,
     },
   ];
@@ -109,7 +111,7 @@ export default function BottomNav() {
     <>
       {/* Bottom Navigation - Telegram Style - Always Fixed */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 pb-safe pointer-events-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 pb-safe"
         style={{
           zIndex: 9999,
           position: 'fixed',
@@ -118,10 +120,10 @@ export default function BottomNav() {
         }}
       >
         {/* Backdrop blur effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-xl pointer-events-none"></div>
 
         {/* Navigation Card - Floating Style */}
-        <div className="relative mx-8 mb-4 pointer-events-auto">
+        <div className="relative mx-8 mb-4">
           <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-gray-200/50 px-2 py-2">
             <div className="flex items-center justify-around">
               {navItems.map((item) => {
@@ -136,7 +138,7 @@ export default function BottomNav() {
                     key={item.name}
                     {...props}
                     className={`
-                      flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-[1.5rem]
+                      relative flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-[1.5rem]
                       transition-all duration-300 ease-out
                       ${
                         item.active
@@ -145,13 +147,21 @@ export default function BottomNav() {
                       }
                     `}
                   >
-                    <Icon
-                      className={`
-                        transition-all duration-300
-                        ${item.active ? "w-5 h-5" : "w-4 h-4"}
-                      `}
-                      strokeWidth={item.active ? 2.5 : 2}
-                    />
+                    <div className="relative">
+                      <Icon
+                        className={`
+                          transition-all duration-300
+                          ${item.active ? "w-5 h-5" : "w-4 h-4"}
+                        `}
+                        strokeWidth={item.active ? 2.5 : 2}
+                      />
+                      {/* Cart Badge */}
+                      {item.name === "Keranjang" && totalItems > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[0.5rem] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                          {totalItems}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={`
                         text-[0.65rem] font-semibold transition-all duration-300
