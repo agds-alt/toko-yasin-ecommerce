@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./_components/Providers";
 import PWAInstaller from "./_components/PWAInstaller";
+import BottomNav from "./_components/BottomNav";
 
 export const metadata: Metadata = {
   title: {
@@ -69,6 +70,7 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           {children}
+          <BottomNav />
           <PWAInstaller />
         </Providers>
       </body>

@@ -29,8 +29,8 @@ export const productRouter = router({
           ...(categoryId && { categoryId }),
           ...(search && {
             OR: [
-              { name: { contains: search } },
-              { description: { contains: search } },
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
             ],
           }),
         },

@@ -1,10 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Urbanist:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  /* Journal 3 Theme Color Palette */
+  --primary: rgba(255, 117, 91, 1); /* coral/salmon */
+  --primary-light: rgba(255, 117, 91, 0.1);
+  --primary-dark: rgba(242, 119, 99, 1);
+  --secondary: rgba(54, 65, 195, 1); /* deep blue */
+
+  /* Accent Colors */
+  --accent-red: rgba(180, 33, 39, 1);
+  --accent-green: rgba(64, 148, 99, 1);
+  --accent-blue: rgba(13, 82, 214, 1);
+  --accent-yellow: rgba(242, 199, 81, 1);
+  --accent-purple: rgba(190, 139, 222, 1);
+  --accent-coral: rgba(242, 119, 99, 1);
+
+  /* Grayscale */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1c2021; /* Full black */
+  --gray-10: #f7f7f7;
+  --gray-30: #ebebf0;
+  --gray-60: #6e7275;
+  --gray-900: #1c2021;
+
+  /* Spacing Tokens - Journal 3 System */
+  --spacing-2: 2px;
+  --spacing-4: 4px;
+  --spacing-6: 6px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-64: 64px;
+  --spacing-72: 72px;
+  --spacing-88: 88px;
+  --spacing-112: 112px;
+  --spacing-120: 120px;
+
+  /* Layout System */
+  --content-max-width: 1600px;
+  --content-gutter: 32px;
+  --grid-gap: 20px;
+
+  /* Border Radius */
+  --radius-default: 8px;
+  --radius-full: 99px;
+
+  /* Transitions */
+  --transition-scale: 0.7s;
+  --transition-default: 0.3s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,11 +70,42 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.7;
+  font-size: 14px;
+  /* Prevent overscroll bounce on mobile */
+  overscroll-behavior-y: none;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Urbanist', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--gray-900);
+  word-spacing: 1px;
+}
+
+html {
+  /* Prevent overscroll bounce on mobile */
+  overscroll-behavior: none;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* Add padding bottom on mobile to prevent content from being hidden behind BottomNav */
+@media (max-width: 768px) {
+  main, .main-content {
+    padding-bottom: 6rem !important; /* 96px - space for bottom nav */
+  }
+
+  /* For pages with min-h-screen */
+  div[class*="min-h-screen"] {
+    padding-bottom: 6rem !important;
   }
 }
