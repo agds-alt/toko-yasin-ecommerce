@@ -141,10 +141,10 @@ export default function LoginPage() {
         <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-sm">
           <p className="font-semibold text-blue-900 mb-2">🔐 Demo Account:</p>
           <p className="text-blue-700">
-            <strong>Admin:</strong> admin@test.com / admin123
+            <strong>Admin:</strong> admin@ecommerce.com / admin123
           </p>
           <p className="text-blue-700">
-            <strong>Customer:</strong> user@test.com / user123
+            <strong>Customer:</strong> customer@example.com / customer123
           </p>
         </div>
       </div>
