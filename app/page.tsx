@@ -672,8 +672,23 @@ function HomeContent() {
                           return;
                         }
 
-                        // TODO: Implement checkout functionality
-                        alert(`Beli sekarang: ${product.name}`);
+                        // Add to cart and redirect to checkout
+                        const images = typeof product.images === "string"
+                          ? JSON.parse(product.images)
+                          : product.images;
+                        const imageUrl = images && images[0] ? images[0] : "/placeholder.png";
+
+                        addToCart({
+                          productId: product.id,
+                          name: product.name,
+                          price: Number(product.price),
+                          quantity: quantity,
+                          image: imageUrl,
+                          slug: product.slug
+                        });
+
+                        // Redirect to checkout page
+                        router.push('/checkout');
                       }}>
                         <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />

@@ -86,10 +86,35 @@ export default function ProfilePage() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{borderColor: 'var(--primary)', borderTopColor: 'transparent'}}></div>
-            <p style={{color: 'var(--gray-60)'}}>Memuat...</p>
+        <div className="min-h-screen bg-gray-50 pt-8 pb-24">
+          <div className="max-w-4xl mx-auto px-4">
+            {/* Profile Card Skeleton */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 animate-pulse">
+              <div className="flex items-center gap-6 mb-6">
+                <div className="w-24 h-24 bg-gray-200 rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-64"></div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+
+            {/* Stats Skeleton */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white rounded-2xl shadow-sm p-6 animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-10 bg-gray-200 rounded w-16"></div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-sm p-6 animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-10 bg-gray-200 rounded w-16"></div>
+              </div>
+            </div>
           </div>
         </div>
       </>

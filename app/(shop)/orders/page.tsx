@@ -66,10 +66,37 @@ export default function OrdersPage() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Memuat pesanan...</p>
+        <div className="min-h-screen bg-gray-50 pt-8 pb-24">
+          <div className="max-w-4xl mx-auto px-4">
+            {/* Header Skeleton */}
+            <div className="mb-6 animate-pulse">
+              <div className="h-10 bg-gray-200 rounded w-48 mb-4"></div>
+              <div className="h-5 bg-gray-200 rounded w-64"></div>
+            </div>
+
+            {/* Filter Tabs Skeleton */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 animate-pulse">
+              {[1,2,3,4].map((i) => (
+                <div key={i} className="h-10 bg-gray-200 rounded-full w-28"></div>
+              ))}
+            </div>
+
+            {/* Order Cards Skeleton */}
+            <div className="space-y-4">
+              {[1,2,3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-sm p-6 animate-pulse">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="h-6 bg-gray-200 rounded w-32"></div>
+                    <div className="h-8 bg-gray-200 rounded-full w-40"></div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-10 bg-gray-200 rounded w-full mt-4"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </>
