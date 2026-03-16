@@ -4,11 +4,13 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,13 +49,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
-              Toko Yasin
+            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600 mb-2" style={{fontFamily: 'Urbanist'}}>
+              TOKO BUKU ABDUL
             </h1>
           </Link>
           <p className="text-gray-600">Masuk ke akun Anda</p>
@@ -81,7 +83,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
                 placeholder="nama@email.com"
               />
             </div>
@@ -91,22 +93,38 @@ export default function LoginPage() {
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full text-white font-bold py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-50"
+              style={{
+                background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)'
+              }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -139,19 +157,19 @@ export default function LoginPage() {
 
           {/* Back to Home */}
           <div className="mt-6 text-center">
-            <Link href="/" className="text-sm text-gray-600 hover:text-blue-600 font-medium">
+            <Link href="/" className="text-sm text-gray-600 hover:text-orange-600 font-medium transition-colors">
               ← Kembali ke Beranda
             </Link>
           </div>
         </div>
 
         {/* Demo Credentials (for testing) */}
-        <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-sm">
-          <p className="font-semibold text-blue-900 mb-2">🔐 Demo Account:</p>
-          <p className="text-blue-700">
+        <div className="mt-6 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4 text-sm">
+          <p className="font-semibold text-orange-900 mb-2">🔐 Demo Account:</p>
+          <p className="text-orange-700">
             <strong>Admin:</strong> admin@ecommerce.com / admin123
           </p>
-          <p className="text-blue-700">
+          <p className="text-orange-700">
             <strong>Customer:</strong> customer@example.com / customer123
           </p>
         </div>
