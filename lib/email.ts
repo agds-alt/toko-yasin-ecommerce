@@ -5,7 +5,8 @@
 
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Use fallback for build time, actual key from env vars at runtime
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
 
 const FROM_EMAIL = "Toko Yasin <onboarding@resend.dev>"; // Default Resend email
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@ecommerce.com";
