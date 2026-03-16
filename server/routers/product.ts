@@ -60,7 +60,10 @@ export const productRouter = router({
     .query(async ({ ctx, input }) => {
       const product = await ctx.prisma.product.findUnique({
         where: { slug: input.slug },
-        include: { category: true },
+        include: {
+          category: true,
+          variants: true,
+        },
       });
 
       if (!product) {
@@ -79,7 +82,10 @@ export const productRouter = router({
     .query(async ({ ctx, input }) => {
       const product = await ctx.prisma.product.findUnique({
         where: { id: input.id },
-        include: { category: true },
+        include: {
+          category: true,
+          variants: true,
+        },
       });
 
       if (!product) {
@@ -103,6 +109,7 @@ export const productRouter = router({
         stock: z.number().int().min(0),
         images: z.array(z.string()).default([]),
         categoryId: z.string().optional(),
+        hasVariants: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -124,6 +131,7 @@ export const productRouter = router({
         images: z.array(z.string()).optional(),
         categoryId: z.string().optional(),
         isActive: z.boolean().optional(),
+        hasVariants: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -189,5 +197,68 @@ export const productRouter = router({
       });
 
       return { success: true };
+    }),
+
+  // ===== VARIANT MANAGEMENT =====
+
+  // Add/Update variants for a product (admin only)
+  updateVariants: adminProcedure
+    .input(
+      z.object({
+        productId: z.string(),
+        hasVariants: z.boolean(),
+        variants: z.array(
+          z.object({
+            name: z.string().min(1), // e.g., "Size", "Color"
+            values: z.array(z.string().min(1)), // e.g., ["S", "M", "L"]
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const product = await ctx.prisma.product.findUnique({
+        where: { id: input.productId },
+      });
+
+      if (!product) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
+      }
+
+      // Update product hasVariants flag
+      await ctx.prisma.product.update({
+        where: { id: input.productId },
+        data: { hasVariants: input.hasVariants },
+      });
+
+      // Delete existing variants
+      await ctx.prisma.productVariant.deleteMany({
+        where: { productId: input.productId },
+      });
+
+      // Create new variants if hasVariants is true
+      if (input.hasVariants && input.variants.length > 0) {
+        await ctx.prisma.productVariant.createMany({
+          data: input.variants.map((variant) => ({
+            productId: input.productId,
+            name: variant.name,
+            values: variant.values,
+          })),
+        });
+      }
+
+      return { success: true };
+    }),
+
+  // Get variants for a product
+  getVariants: publicProcedure
+    .input(z.object({ productId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.productVariant.findMany({
+        where: { productId: input.productId },
+        orderBy: { createdAt: "asc" },
+      });
     }),
 });

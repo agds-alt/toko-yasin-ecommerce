@@ -1,300 +1,333 @@
 "use client";
 
-import { trpc } from "@/lib/trpc";
+import Navbar from "@/app/_components/Navbar";
+import { useCart } from "@/app/_contexts/CartContext";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Navbar from "@/app/_components/Navbar";
-import { useSession } from "next-auth/react";
+import { trpc } from "@/lib/trpc";
+import { ShoppingBag, MapPin, Phone, MessageSquare, CreditCard } from "lucide-react";
 
 export default function CheckoutPage() {
-  const router = useRouter();
+  const { items, totalPrice, clearCart } = useCart();
   const { data: session, status } = useSession();
-
-  const [formData, setFormData] = useState({
-    shippingAddress: "",
-    shippingPhone: "",
-    notes: "",
-    bankName: "BCA",
-    accountNumber: "1234567890",
-    accountName: "Toko Yasin",
-  });
-
-  const { data: cart, isLoading: cartLoading } = trpc.cart.get.useQuery(undefined, {
-    enabled: status === "authenticated",
-  });
-
-  const createOrder = trpc.order.create.useMutation({
-    onSuccess: (data) => {
-      alert(`✅ Pesanan berhasil dibuat!\nOrder Number: ${data.orderNumber}`);
-      router.push(`/orders/${data.id}`);
-    },
-    onError: (error) => {
-      alert(`❌ Error: ${error.message}`);
-    },
-  });
+  const router = useRouter();
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl">
-            <div className="text-6xl mb-4">🔒</div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Login Diperlukan</h1>
-            <p className="text-gray-600 mb-6">
-              Silakan login terlebih dahulu untuk checkout.
-            </p>
-            <button
-              onClick={() => router.push("/auth/login")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all"
-            >
-              Login Sekarang
-            </button>
-          </div>
-        </div>
-      </>
-    );
+    router.push("/auth/login");
+    return null;
   }
 
-  if (cartLoading || status === "loading") {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Memuat...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  const items = cart?.items || [];
-  const totalAmount = items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
-
-  // Redirect if cart empty
+  // Redirect if cart is empty
   if (items.length === 0) {
     router.push("/cart");
     return null;
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [formData, setFormData] = useState({
+    shippingAddress: "",
+    shippingPhone: session?.user?.phone || "",
+    notes: "",
+    bankName: "BCA", // Default bank
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createOrder = trpc.order.createFromCart.useMutation({
+    onSuccess: (data) => {
+      clearCart();
+      router.push(`/orders/${data.id}`);
+    },
+    onError: (error) => {
+      alert(`Error: ${error.message}`);
+      setIsSubmitting(false);
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.shippingAddress || !formData.shippingPhone) {
-      alert("⚠️ Mohon lengkapi alamat dan nomor telepon");
+      alert("Mohon lengkapi alamat dan nomor telepon");
       return;
     }
 
-    createOrder.mutate(formData);
+    setIsSubmitting(true);
+
+    try {
+      await createOrder.mutateAsync({
+        items: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalAmount: totalPrice,
+        shippingAddress: formData.shippingAddress,
+        shippingPhone: formData.shippingPhone,
+        notes: formData.notes,
+        bankName: formData.bankName,
+      });
+    } catch (error) {
+      // Error handled by onError
+    }
   };
+
+  if (status === "loading") {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">Loading...</div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-2">💳 Checkout</h1>
-            <p className="text-gray-600">Lengkapi data pengiriman dan pembayaran</p>
+            <h1
+              className="text-3xl sm:text-4xl font-bold mb-2"
+              style={{
+                color: "var(--gray-900)",
+                fontFamily: "Urbanist",
+              }}
+            >
+              Checkout
+            </h1>
+            <p className="text-base" style={{ color: "var(--gray-60)" }}>
+              Lengkapi data pengiriman Anda
+            </p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left: Checkout Form */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Shipping Form */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Shipping Info */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    📦 Informasi Pengiriman
-                  </h2>
-
-                  <div className="space-y-4">
-                    {/* Alamat */}
-                    <div>
-                      <label htmlFor="shippingAddress" className="block text-sm font-semibold text-gray-700 mb-2">
-                        Alamat Lengkap *
-                      </label>
-                      <textarea
-                        id="shippingAddress"
-                        name="shippingAddress"
-                        value={formData.shippingAddress}
-                        onChange={handleChange}
-                        required
-                        rows={4}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
-                        placeholder="Jl. Contoh No. 123, RT/RW 01/02, Kelurahan, Kecamatan, Kota, Provinsi, Kode Pos"
-                      />
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label htmlFor="shippingPhone" className="block text-sm font-semibold text-gray-700 mb-2">
-                        No. Telepon *
-                      </label>
-                      <input
-                        id="shippingPhone"
-                        name="shippingPhone"
-                        type="tel"
-                        value={formData.shippingPhone}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                        placeholder="08123456789"
-                      />
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                        Catatan (opsional)
-                      </label>
-                      <textarea
-                        id="notes"
-                        name="notes"
-                        value={formData.notes}
-                        onChange={handleChange}
-                        rows={3}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
-                        placeholder="Catatan untuk penjual (warna, ukuran, dll)"
-                      />
-                    </div>
+                {/* Shipping Address */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                    <h2
+                      className="text-xl font-bold"
+                      style={{ color: "var(--gray-900)", fontFamily: "Urbanist" }}
+                    >
+                      Alamat Pengiriman
+                    </h2>
                   </div>
+
+                  <textarea
+                    value={formData.shippingAddress}
+                    onChange={(e) =>
+                      setFormData({ ...formData, shippingAddress: e.target.value })
+                    }
+                    placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Provinsi, Kode Pos)"
+                    rows={4}
+                    required
+                    className="w-full px-4 py-3 border rounded-lg resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    style={{ borderColor: "var(--gray-30)" }}
+                  />
                 </div>
 
-                {/* Payment Info */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    💰 Informasi Pembayaran
-                  </h2>
-
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
-                    <p className="text-sm text-blue-900 font-semibold mb-2">ℹ️ Cara Pembayaran:</p>
-                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                      <li>Klik tombol "Buat Pesanan"</li>
-                      <li>Transfer ke rekening yang tertera di bawah</li>
-                      <li>Upload bukti transfer di halaman order</li>
-                      <li>Tunggu konfirmasi admin (max 1x24 jam)</li>
-                    </ol>
+                {/* Contact Info */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Phone className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                    <h2
+                      className="text-xl font-bold"
+                      style={{ color: "var(--gray-900)", fontFamily: "Urbanist" }}
+                    >
+                      Nomor Telepon
+                    </h2>
                   </div>
 
-                  <div className="space-y-4">
-                    {/* Bank Name */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Bank Tujuan Transfer
-                      </label>
-                      <select
-                        name="bankName"
-                        value={formData.bankName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white"
-                      >
-                        <option value="BCA">BCA</option>
-                        <option value="BNI">BNI</option>
-                        <option value="Mandiri">Mandiri</option>
-                        <option value="BRI">BRI</option>
-                      </select>
+                  <input
+                    type="tel"
+                    value={formData.shippingPhone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, shippingPhone: e.target.value })
+                    }
+                    placeholder="08xxxxxxxxxx"
+                    required
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    style={{ borderColor: "var(--gray-30)" }}
+                  />
+                </div>
+
+                {/* Notes (Optional) */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MessageSquare className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                    <h2
+                      className="text-xl font-bold"
+                      style={{ color: "var(--gray-900)", fontFamily: "Urbanist" }}
+                    >
+                      Catatan (Opsional)
+                    </h2>
+                  </div>
+
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
+                    placeholder="Tambahkan catatan untuk penjual (opsional)"
+                    rows={3}
+                    className="w-full px-4 py-3 border rounded-lg resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    style={{ borderColor: "var(--gray-30)" }}
+                  />
+                </div>
+
+                {/* Payment Method */}
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                    <h2
+                      className="text-xl font-bold"
+                      style={{ color: "var(--gray-900)", fontFamily: "Urbanist" }}
+                    >
+                      Metode Pembayaran
+                    </h2>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm" style={{ color: "var(--gray-60)" }}>
+                      Transfer Bank Manual
+                    </p>
+
+                    {/* Bank Selection */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {["BCA", "BNI", "Mandiri", "BRI"].map((bank) => (
+                        <button
+                          key={bank}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, bankName: bank })}
+                          className="px-4 py-3 border-2 rounded-lg font-semibold transition-all hover:border-primary"
+                          style={{
+                            borderColor:
+                              formData.bankName === bank ? "var(--primary)" : "var(--gray-30)",
+                            backgroundColor:
+                              formData.bankName === bank ? "var(--primary-light)" : "white",
+                            color:
+                              formData.bankName === bank ? "var(--primary)" : "var(--gray-900)",
+                          }}
+                        >
+                          {bank}
+                        </button>
+                      ))}
                     </div>
 
-                    {/* Account Info - Read Only */}
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
-                      <p className="text-sm text-gray-700 mb-3 font-semibold">Transfer ke rekening:</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                          <span className="text-gray-600 text-sm">Bank:</span>
-                          <span className="font-bold text-gray-900">{formData.bankName}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                          <span className="text-gray-600 text-sm">No. Rekening:</span>
-                          <span className="font-bold text-gray-900">{formData.accountNumber}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                          <span className="text-gray-600 text-sm">Atas Nama:</span>
-                          <span className="font-bold text-gray-900">{formData.accountName}</span>
-                        </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+                      <p className="text-sm font-semibold text-blue-900 mb-2">
+                        Informasi Transfer:
+                      </p>
+                      <div className="text-sm text-blue-800 space-y-1">
+                        <p>Bank: {formData.bankName}</p>
+                        <p>No. Rekening: 1234567890</p>
+                        <p>Atas Nama: Toko Yasin</p>
                       </div>
                     </div>
+
+                    <p className="text-sm mt-3" style={{ color: "var(--gray-60)" }}>
+                      Anda akan diarahkan ke halaman upload bukti pembayaran setelah order dibuat
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Right: Order Summary */}
+              {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-4 border-2 border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Ringkasan Pesanan</h2>
+                <div
+                  className="bg-white rounded-lg p-6 shadow-sm sticky top-24"
+                  style={{ borderColor: "var(--gray-30)" }}
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <ShoppingBag className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                    <h2
+                      className="text-xl font-bold"
+                      style={{ color: "var(--gray-900)", fontFamily: "Urbanist" }}
+                    >
+                      Ringkasan Pesanan
+                    </h2>
+                  </div>
 
-                  {/* Products List */}
-                  <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
-                    {items.map((item) => {
-                      const images = Array.isArray(item.product.images) ? item.product.images : [];
-                      const imageUrl = images[0] || "/placeholder.png";
-
-                      return (
-                        <div key={item.id} className="flex gap-3 pb-3 border-b border-gray-200">
+                  <div className="space-y-3 mb-6">
+                    {/* Products List */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex gap-2 text-sm">
                           <img
-                            src={imageUrl}
-                            alt={item.product.name}
-                            className="w-16 h-16 object-contain bg-gray-100 rounded-lg"
+                            src={item.image}
+                            alt={item.name}
+                            className="w-12 h-12 object-contain bg-gray-50 rounded"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm text-gray-900 line-clamp-2">
-                              {item.product.name}
+                            <p
+                              className="font-medium truncate"
+                              style={{ color: "var(--gray-900)" }}
+                            >
+                              {item.name}
                             </p>
-                            <p className="text-sm text-gray-600">
-                              {item.quantity} x Rp {Number(item.product.price).toLocaleString("id-ID")}
+                            <p style={{ color: "var(--gray-60)" }}>
+                              {item.quantity}x Rp {item.price.toLocaleString("id-ID")}
                             </p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Total */}
-                  <div className="border-t-2 border-gray-200 pt-4 mb-6">
-                    <div className="flex justify-between items-baseline mb-2">
-                      <span className="text-lg font-semibold text-gray-900">Total</span>
-                      <span className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                        Rp {totalAmount.toLocaleString("id-ID")}
-                      </span>
+                      ))}
                     </div>
-                    <p className="text-xs text-gray-500">Biaya pengiriman akan ditentukan kemudian</p>
+
+                    <div className="pt-3 border-t" style={{ borderColor: "var(--gray-30)" }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span style={{ color: "var(--gray-60)" }}>
+                          Subtotal ({items.length} item)
+                        </span>
+                        <span className="font-semibold" style={{ color: "var(--gray-900)" }}>
+                          Rp {totalPrice.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold" style={{ color: "var(--gray-900)" }}>
+                          Total
+                        </span>
+                        <span
+                          className="text-2xl font-bold"
+                          style={{ color: "var(--primary)", fontFamily: "Urbanist" }}
+                        >
+                          Rp {totalPrice.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={createOrder.isPending}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white text-lg font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full py-3 text-white font-semibold rounded-full transition-all hover:opacity-90 disabled:opacity-50"
+                    style={{ backgroundColor: "var(--primary)" }}
                   >
-                    {createOrder.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        Memproses...
-                      </>
-                    ) : (
-                      <>✓ Buat Pesanan</>
-                    )}
+                    {isSubmitting ? "Memproses..." : "Buat Pesanan"}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => router.push("/cart")}
-                    className="w-full mt-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl border-2 border-gray-300 transition-all"
+                    className="w-full mt-3 py-3 border-2 font-semibold rounded-full transition-all hover:bg-gray-50"
+                    style={{ borderColor: "var(--gray-30)", color: "var(--gray-900)" }}
                   >
-                    ← Kembali ke Keranjang
+                    Kembali ke Keranjang
                   </button>
+
+                  <p className="text-xs text-center mt-3" style={{ color: "var(--gray-60)" }}>
+                    Dengan melanjutkan, Anda menyetujui syarat & ketentuan
+                  </p>
                 </div>
               </div>
             </div>

@@ -64,6 +64,23 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // If the user is redirected to the base URL after sign in
+      if (url === baseUrl || url === `${baseUrl}/`) {
+        // Get the session to check user role
+        // We need to return the redirect URL synchronously, so we use a workaround
+        // The role will be available in the URL callback parameter
+        return url;
+      }
+
+      // If URL starts with baseUrl, allow it
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+
+      // Default to baseUrl
+      return baseUrl;
+    },
   },
   pages: {
     signIn: "/auth/login",

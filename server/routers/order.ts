@@ -6,9 +6,176 @@
 import { router, protectedProcedure, adminProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import {
+  sendOrderConfirmationEmail,
+  sendNewOrderNotificationToAdmin,
+} from "../../lib/email";
 
 export const orderRouter = router({
-  // Create order from cart
+  // Create order from localStorage cart (frontend cart)
+  createFromCart: protectedProcedure
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            productId: z.string(),
+            quantity: z.number().min(1),
+            price: z.number(),
+            variant: z.record(z.string()).optional(),
+          })
+        ),
+        totalAmount: z.number(),
+        shippingAddress: z.string().min(10),
+        shippingPhone: z.string().min(10),
+        notes: z.string().optional(),
+        bankName: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.items.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cart is empty",
+        });
+      }
+
+      // Verify all products exist and have sufficient stock
+      for (const item of input.items) {
+        const product = await ctx.prisma.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        if (!product) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Product not found`,
+          });
+        }
+
+        if (product.stock < item.quantity) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Insufficient stock for ${product.name}`,
+          });
+        }
+      }
+
+      // Generate order number
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+
+      // Create order with transaction
+      const order = await ctx.prisma.$transaction(async (tx) => {
+        // Create order
+        const newOrder = await tx.order.create({
+          data: {
+            orderNumber,
+            userId: (ctx.session.user as any).id,
+            totalAmount: input.totalAmount,
+            shippingAddress: input.shippingAddress,
+            shippingPhone: input.shippingPhone,
+            notes: input.notes,
+            items: {
+              create: input.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price,
+                variant: item.variant || undefined,
+              })),
+            },
+          },
+          select: {
+            id: true,
+            orderNumber: true,
+            totalAmount: true,
+            status: true,
+            createdAt: true,
+          },
+        });
+
+        // Create payment record with default Toko Yasin account info
+        await tx.payment.create({
+          data: {
+            orderId: newOrder.id,
+            bankName: input.bankName,
+            accountNumber: "1234567890", // Default account
+            accountName: "Toko Yasin", // Default account name
+            amount: input.totalAmount,
+          },
+        });
+
+        // Reduce stock
+        for (const item of input.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+
+        return newOrder;
+      });
+
+      // Get order details with items for email
+      const orderDetails = await ctx.prisma.order.findUnique({
+        where: { id: order.id },
+        include: {
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      // Send confirmation email to customer (async, non-blocking)
+      if (orderDetails) {
+        sendOrderConfirmationEmail({
+          orderNumber: order.orderNumber,
+          customerName: orderDetails.user.name || "Customer",
+          customerEmail: orderDetails.user.email,
+          totalAmount: Number(order.totalAmount),
+          items: orderDetails.items.map((item) => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: Number(item.price),
+          })),
+          shippingAddress: input.shippingAddress,
+          shippingPhone: input.shippingPhone,
+        }).catch((err) => console.error("Email send failed:", err));
+
+        // Send notification to admin (async, non-blocking)
+        sendNewOrderNotificationToAdmin({
+          orderNumber: order.orderNumber,
+          customerName: orderDetails.user.name || "Customer",
+          customerEmail: orderDetails.user.email,
+          totalAmount: Number(order.totalAmount),
+          items: orderDetails.items.map((item) => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: Number(item.price),
+          })),
+          shippingAddress: input.shippingAddress,
+          shippingPhone: input.shippingPhone,
+        }).catch((err) => console.error("Admin email failed:", err));
+      }
+
+      return order;
+    }),
+
+  // Create order from cart (legacy - database cart)
   create: protectedProcedure
     .input(
       z.object({
@@ -245,6 +412,120 @@ export const orderRouter = router({
         where: { id: input.orderId },
         data: { status: input.status },
       });
+
+      return { success: true };
+    }),
+
+  // Upload payment proof
+  uploadPaymentProof: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        proofImageUrl: z.string().url(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get order to verify ownership
+      const order = await ctx.prisma.order.findUnique({
+        where: { id: input.orderId },
+        include: { payment: true },
+      });
+
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order not found",
+        });
+      }
+
+      // Check authorization
+      if (order.userId !== (ctx.session.user as any).id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to upload proof for this order",
+        });
+      }
+
+      if (!order.payment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Payment record not found",
+        });
+      }
+
+      // Update payment with proof image
+      await ctx.prisma.payment.update({
+        where: { id: order.payment.id },
+        data: {
+          proofImage: input.proofImageUrl,
+          status: "UPLOADED",
+        },
+      });
+
+      // Update order status
+      await ctx.prisma.order.update({
+        where: { id: input.orderId },
+        data: { status: "PAYMENT_UPLOADED" },
+      });
+
+      return { success: true };
+    }),
+
+  // Verify payment (admin only)
+  verifyPayment: adminProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        approve: z.boolean(),
+        notes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const order = await ctx.prisma.order.findUnique({
+        where: { id: input.orderId },
+        include: { payment: true },
+      });
+
+      if (!order || !order.payment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order or payment not found",
+        });
+      }
+
+      if (input.approve) {
+        // Approve payment
+        await ctx.prisma.payment.update({
+          where: { id: order.payment.id },
+          data: {
+            status: "VERIFIED",
+            verifiedBy: (ctx.session.user as any).id,
+            verifiedAt: new Date(),
+            notes: input.notes,
+          },
+        });
+
+        await ctx.prisma.order.update({
+          where: { id: input.orderId },
+          data: { status: "CONFIRMED" },
+        });
+      } else {
+        // Reject payment
+        await ctx.prisma.payment.update({
+          where: { id: order.payment.id },
+          data: {
+            status: "REJECTED",
+            verifiedBy: (ctx.session.user as any).id,
+            verifiedAt: new Date(),
+            notes: input.notes,
+          },
+        });
+
+        await ctx.prisma.order.update({
+          where: { id: input.orderId },
+          data: { status: "CANCELLED" },
+        });
+      }
 
       return { success: true };
     }),

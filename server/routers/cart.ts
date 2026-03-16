@@ -54,6 +54,7 @@ export const cartRouter = router({
       z.object({
         productId: z.string(),
         quantity: z.number().int().min(1).default(1),
+        variant: z.record(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -94,14 +95,22 @@ export const cartRouter = router({
         });
       }
 
-      // Check if item already in cart
-      const existingItem = await ctx.prisma.cartItem.findUnique({
+      // Check if item already in cart (with same variant if applicable)
+      const existingItems = await ctx.prisma.cartItem.findMany({
         where: {
-          cartId_productId: {
-            cartId: cart.id,
-            productId: input.productId,
-          },
+          cartId: cart.id,
+          productId: input.productId,
         },
+      });
+
+      // Find item with matching variant
+      const existingItem = existingItems.find((item) => {
+        if (!input.variant && !item.variant) return true; // Both no variants
+        if (!input.variant || !item.variant) return false; // One has variant, one doesn't
+
+        // Compare variants
+        const itemVariant = item.variant as Record<string, string>;
+        return JSON.stringify(itemVariant) === JSON.stringify(input.variant);
       });
 
       if (existingItem) {
@@ -126,6 +135,7 @@ export const cartRouter = router({
             cartId: cart.id,
             productId: input.productId,
             quantity: input.quantity,
+            variant: input.variant || undefined,
           },
         });
       }

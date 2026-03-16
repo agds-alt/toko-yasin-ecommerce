@@ -76,6 +76,25 @@ export default function CartPage() {
                           </h3>
                         </Link>
 
+                        {/* Variant Info */}
+                        {item.variant && Object.keys(item.variant).length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {Object.entries(item.variant).map(([key, value]) => (
+                              <span
+                                key={key}
+                                className="text-xs px-2 py-1 rounded-full border font-medium"
+                                style={{
+                                  borderColor: 'var(--gray-30)',
+                                  color: 'var(--gray-70)',
+                                  backgroundColor: 'var(--gray-10)'
+                                }}
+                              >
+                                {key}: {value}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
                         <p className="text-xl font-bold mb-4" style={{color: 'var(--primary)', fontFamily: 'Urbanist'}}>
                           Rp {item.price.toLocaleString('id-ID')}
                         </p>

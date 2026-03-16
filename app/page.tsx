@@ -24,6 +24,33 @@ function HomeContent() {
   });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+
+  // Fetch wishlist items if logged in
+  const { data: wishlistData } = trpc.wishlist.getAll.useQuery(undefined, {
+    enabled: !!session,
+  });
+
+  useEffect(() => {
+    if (wishlistData) {
+      setWishlistItems(new Set(wishlistData.map((item) => item.productId)));
+    }
+  }, [wishlistData]);
+
+  // Wishlist toggle mutation
+  const toggleWishlist = trpc.wishlist.toggle.useMutation({
+    onSuccess: (data, variables) => {
+      if (data.inWishlist) {
+        setWishlistItems((prev) => new Set([...prev, variables.productId]));
+      } else {
+        setWishlistItems((prev) => {
+          const next = new Set(prev);
+          next.delete(variables.productId);
+          return next;
+        });
+      }
+    },
+  });
 
   // Hero slides data - using HD Al-Quran and Islamic book images
   const heroSlides = [
@@ -308,11 +335,17 @@ function HomeContent() {
                         return;
                       }
 
-                      // TODO: Add to wishlist
-                      router.push('/wishlist');
+                      toggleWishlist.mutate({ productId: product.id });
                     }}
+                    disabled={toggleWishlist.isPending}
                   >
-                    <Heart className="w-4 h-4" style={{color: 'var(--gray-60)'}} />
+                    <Heart
+                      className="w-4 h-4 transition-all"
+                      style={{
+                        color: wishlistItems.has(product.id) ? 'var(--primary)' : 'var(--gray-60)',
+                        fill: wishlistItems.has(product.id) ? 'var(--primary)' : 'none'
+                      }}
+                    />
                   </button>
 
                   {/* Product Image with Quick View */}

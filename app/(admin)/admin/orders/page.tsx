@@ -42,25 +42,12 @@ export default function AdminOrdersPage() {
     },
   });
 
-  const verifyPayment = trpc.payment.verify.useMutation({
+  const verifyPayment = trpc.order.verifyPayment.useMutation({
     onSuccess: () => {
       alert("✅ Pembayaran berhasil diverifikasi!");
       setShowVerifyModal(false);
       setSelectedOrder(null);
       setVerifyNotes("");
-      refetch();
-    },
-    onError: (error) => {
-      alert(`❌ Error: ${error.message}`);
-    },
-  });
-
-  const rejectPayment = trpc.payment.reject.useMutation({
-    onSuccess: () => {
-      alert("✅ Pembayaran ditolak!");
-      setShowVerifyModal(false);
-      setSelectedOrder(null);
-      setRejectNotes("");
       refetch();
     },
     onError: (error) => {
@@ -285,6 +272,45 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
+            {/* Order Items */}
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-gray-700 mb-3">
+                Produk yang Dipesan
+              </p>
+              <div className="space-y-3">
+                {selectedOrder.items.map((item: any) => (
+                  <div key={item.id} className="bg-gray-50 rounded-lg p-3 flex gap-3">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{item.product.name}</p>
+
+                      {/* Variant Info */}
+                      {item.variant && typeof item.variant === 'object' && Object.keys(item.variant).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                          {Object.entries(item.variant as Record<string, string>).map(([key, value]) => (
+                            <span
+                              key={key}
+                              className="text-xs px-2 py-0.5 rounded-full border font-medium bg-white text-gray-600 border-gray-300"
+                            >
+                              {key}: {value}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-sm text-gray-600">
+                        {item.quantity} x Rp {Number(item.price).toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-gray-900">
+                        Rp {(Number(item.price) * item.quantity).toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Payment Proof */}
             {selectedOrder.payment?.proofImage && (
               <div className="mb-6">
@@ -346,20 +372,22 @@ export default function AdminOrdersPage() {
                     alert("Masukkan alasan penolakan");
                     return;
                   }
-                  rejectPayment.mutate({
-                    paymentId: selectedOrder.payment.id,
+                  verifyPayment.mutate({
+                    orderId: selectedOrder.id,
+                    approve: false,
                     notes: rejectNotes,
                   });
                 }}
-                disabled={rejectPayment.isPending}
+                disabled={verifyPayment.isPending}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all"
               >
-                {rejectPayment.isPending ? "Menolak..." : "Tolak"}
+                {verifyPayment.isPending ? "Menolak..." : "Tolak"}
               </button>
               <button
                 onClick={() => {
                   verifyPayment.mutate({
-                    paymentId: selectedOrder.payment.id,
+                    orderId: selectedOrder.id,
+                    approve: true,
                     notes: verifyNotes,
                   });
                 }}

@@ -13,17 +13,19 @@ datasource db {
 
 // ===== USER & AUTH =====
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(CUSTOMER)
-  phone     String?
-  address   String?
-  orders    Order[]
-  cart      Cart?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  password     String
+  role         Role          @default(CUSTOMER)
+  phone        String?
+  address      String?
+  orders       Order[]
+  cart         Cart?
+  wishlistItems WishlistItem[]
+  reviews      Review[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@index([email])
 }
@@ -35,24 +37,41 @@ enum Role {
 
 // ===== PRODUCTS =====
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String?
-  price       Decimal     @db.Decimal(10, 2)
-  stock       Int         @default(0)
-  images      String[]    // PostgreSQL supports array
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  categoryId  String?
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  description   String?
+  price         Decimal        @db.Decimal(10, 2)
+  stock         Int            @default(0)
+  images        String[]       // PostgreSQL supports array
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+  reviews       Review[]
+  variants      ProductVariant[]
+  isActive      Boolean        @default(true)
+  hasVariants   Boolean        @default(false) // If true, use variants for stock/price
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([slug])
   @@index([categoryId])
   @@index([isActive])
+}
+
+// Product Variants (e.g., Size: S/M/L, Color: Red/Blue)
+model ProductVariant {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  name      String   // e.g., "Size", "Color"
+  values    String[] // e.g., ["S", "M", "L"] or ["Red", "Blue", "Green"]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
 }
 
 model Category {
@@ -83,10 +102,10 @@ model CartItem {
   product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int      @default(1)
+  variant   Json?    // Selected variants: { "Size": "M", "Color": "Red" }
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([cartId, productId])
   @@index([cartId])
   @@index([productId])
 }
@@ -121,6 +140,7 @@ model OrderItem {
   productId String
   quantity  Int
   price     Decimal  @db.Decimal(10, 2) // Snapshot price at order time
+  variant   Json?    // Selected variants: { "Size": "M", "Color": "Red" }
   createdAt DateTime @default(now())
 
   @@index([orderId])
@@ -163,4 +183,37 @@ enum PaymentStatus {
   UPLOADED // Bukti sudah diupload, menunggu verifikasi
   VERIFIED // Sudah diverifikasi admin
   REJECTED // Ditolak admin (bukti tidak valid)
+}
+
+// ===== WISHLIST =====
+model WishlistItem {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+// ===== REVIEWS & RATINGS =====
+model Review {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  rating    Int      // 1-5 stars
+  comment   String?
+  images    String[] // Optional review images
+  isVerified Boolean @default(false) // Has user purchased this product
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId]) // User can only review product once
+  @@index([productId])
+  @@index([rating])
 }

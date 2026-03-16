@@ -41,7 +41,7 @@ export default function OrderDetailPage() {
     { enabled: status === "authenticated" && !!orderId }
   );
 
-  const uploadPayment = trpc.payment.uploadProof.useMutation({
+  const uploadPayment = trpc.order.uploadPaymentProof.useMutation({
     onSuccess: () => {
       alert("✅ Bukti transfer berhasil diupload!");
       refetch();
@@ -224,6 +224,21 @@ export default function OrderDetailPage() {
                         />
                         <div className="flex-1">
                           <h3 className="font-bold text-gray-900 mb-1">{item.product.name}</h3>
+
+                          {/* Variant Info */}
+                          {item.variant && typeof item.variant === 'object' && Object.keys(item.variant).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {Object.entries(item.variant as Record<string, string>).map(([key, value]) => (
+                                <span
+                                  key={key}
+                                  className="text-xs px-2 py-1 rounded-full border font-medium bg-gray-50 text-gray-600 border-gray-300"
+                                >
+                                  {key}: {value}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           <p className="text-sm text-gray-600 mb-2">
                             {item.quantity} x Rp {Number(item.price).toLocaleString("id-ID")}
                           </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useSession } from "next-auth/react";
 
 export interface CartItem {
   id: string;
@@ -10,6 +11,7 @@ export interface CartItem {
   quantity: number;
   image: string;
   slug: string;
+  variant?: Record<string, string>;
 }
 
 interface CartContextType {
@@ -25,38 +27,72 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
   const [items, setItems] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Load cart from localStorage on mount
+  // Get cart key based on user
+  const getCartKey = (userId: string | null) => {
+    return userId ? `cart_${userId}` : "cart_guest";
+  };
+
+  // Load cart from localStorage when session changes
   useEffect(() => {
     setMounted(true);
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error("Failed to load cart from localStorage:", error);
+
+    if (status === "loading") return;
+
+    const userId = session?.user?.email || null;
+    const cartKey = getCartKey(userId);
+
+    // If user changed (login/logout), clear current cart and load new one
+    if (currentUserId !== userId) {
+      setCurrentUserId(userId);
+
+      // Load cart for current user
+      const savedCart = localStorage.getItem(cartKey);
+      if (savedCart) {
+        try {
+          setItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error("Failed to load cart from localStorage:", error);
+          setItems([]);
+        }
+      } else {
+        setItems([]);
       }
     }
-  }, []);
+  }, [session, status, currentUserId]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("cart", JSON.stringify(items));
+    if (mounted && currentUserId !== null) {
+      const cartKey = getCartKey(currentUserId);
+      localStorage.setItem(cartKey, JSON.stringify(items));
     }
-  }, [items, mounted]);
+  }, [items, mounted, currentUserId]);
 
   const addToCart = (item: Omit<CartItem, "id">) => {
     setItems((prevItems) => {
-      // Check if item already exists in cart
-      const existingItem = prevItems.find((i) => i.productId === item.productId);
+      // Check if item already exists in cart (with same variant if applicable)
+      const existingItem = prevItems.find((i) => {
+        if (i.productId !== item.productId) return false;
+
+        // Both have no variants
+        if (!i.variant && !item.variant) return true;
+
+        // One has variant, one doesn't
+        if (!i.variant || !item.variant) return false;
+
+        // Compare variants
+        return JSON.stringify(i.variant) === JSON.stringify(item.variant);
+      });
 
       if (existingItem) {
-        // Update quantity if item exists
+        // Update quantity if item exists with same variant
         return prevItems.map((i) =>
-          i.productId === item.productId
+          i.id === existingItem.id
             ? { ...i, quantity: i.quantity + item.quantity }
             : i
         );

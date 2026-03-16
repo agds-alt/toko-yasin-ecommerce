@@ -21,6 +21,8 @@ export default function EditProductPage() {
   });
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [hasVariants, setHasVariants] = useState(false);
+  const [variants, setVariants] = useState<{ name: string; values: string[] }[]>([]);
 
   const { data: product, isLoading } = trpc.product.getById.useQuery(
     { id: productId },
@@ -32,11 +34,25 @@ export default function EditProductPage() {
 
   const updateProduct = trpc.product.update.useMutation({
     onSuccess: () => {
+      // Update variants
+      updateVariantsMutation.mutate({
+        productId: productId,
+        hasVariants: hasVariants,
+        variants: variants.filter(v => v.name && v.values.length > 0),
+      });
+    },
+    onError: (error) => {
+      alert(`❌ Error: ${error.message}`);
+    },
+  });
+
+  const updateVariantsMutation = trpc.product.updateVariants.useMutation({
+    onSuccess: () => {
       alert("✅ Produk berhasil diupdate!");
       router.push("/admin/products");
     },
     onError: (error) => {
-      alert(`❌ Error: ${error.message}`);
+      alert(`❌ Error saat update varian: ${error.message}`);
     },
   });
 
@@ -53,6 +69,8 @@ export default function EditProductPage() {
         isActive: product.isActive,
       });
       setImages(product.images || []);
+      setHasVariants(product.hasVariants || false);
+      setVariants(product.variants || []);
     }
   }, [product]);
 
@@ -112,7 +130,28 @@ export default function EditProductPage() {
       images: images,
       categoryId: formData.categoryId || undefined,
       isActive: formData.isActive,
+      hasVariants: hasVariants,
     });
+  };
+
+  const addVariant = () => {
+    setVariants([...variants, { name: "", values: [] }]);
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const updateVariantName = (index: number, name: string) => {
+    const updated = [...variants];
+    updated[index].name = name;
+    setVariants(updated);
+  };
+
+  const updateVariantValues = (index: number, valuesStr: string) => {
+    const updated = [...variants];
+    updated[index].values = valuesStr.split(',').map(v => v.trim()).filter(v => v);
+    setVariants(updated);
   };
 
   if (isLoading) {
@@ -282,6 +321,74 @@ export default function EditProductPage() {
             <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
               Produk Aktif (tampilkan di toko)
             </label>
+          </div>
+
+          {/* Variants */}
+          <div className="border-2 border-gray-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700">
+                  Varian Produk
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Tambahkan varian seperti ukuran, warna, dll (opsional)
+                </p>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hasVariants}
+                  onChange={(e) => {
+                    setHasVariants(e.target.checked);
+                    if (!e.target.checked) setVariants([]);
+                  }}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-200"
+                />
+                <span className="text-sm font-semibold text-gray-700">Aktifkan Varian</span>
+              </label>
+            </div>
+
+            {hasVariants && (
+              <div className="space-y-4">
+                {variants.map((variant, index) => (
+                  <div key={index} className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 space-y-3">
+                        <input
+                          type="text"
+                          value={variant.name}
+                          onChange={(e) => updateVariantName(index, e.target.value)}
+                          placeholder="Nama varian (contoh: Ukuran, Warna)"
+                          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={variant.values.join(', ')}
+                          onChange={(e) => updateVariantValues(index, e.target.value)}
+                          placeholder="Nilai (pisahkan dengan koma, contoh: S, M, L, XL)"
+                          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeVariant(index)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                >
+                  + Tambah Varian
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Images */}

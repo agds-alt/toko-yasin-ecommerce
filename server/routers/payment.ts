@@ -6,6 +6,7 @@
 import { router, protectedProcedure, adminProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { sendPaymentStatusEmail } from "../../lib/email";
 
 export const paymentRouter = router({
   // Upload payment proof
@@ -106,7 +107,18 @@ export const paymentRouter = router({
     .mutation(async ({ ctx, input }) => {
       const payment = await ctx.prisma.payment.findUnique({
         where: { id: input.paymentId },
-        include: { order: true },
+        include: {
+          order: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!payment) {
@@ -133,6 +145,16 @@ export const paymentRouter = router({
         data: { status: "CONFIRMED" },
       });
 
+      // Send verification email to customer
+      sendPaymentStatusEmail({
+        orderNumber: payment.order.orderNumber,
+        customerName: payment.order.user.name || "Customer",
+        customerEmail: payment.order.user.email,
+        totalAmount: Number(payment.amount),
+        status: "verified",
+        notes: input.notes,
+      }).catch((err) => console.error("Payment email failed:", err));
+
       return { success: true };
     }),
 
@@ -147,7 +169,18 @@ export const paymentRouter = router({
     .mutation(async ({ ctx, input }) => {
       const payment = await ctx.prisma.payment.findUnique({
         where: { id: input.paymentId },
-        include: { order: true },
+        include: {
+          order: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!payment) {
@@ -173,6 +206,16 @@ export const paymentRouter = router({
         where: { id: payment.orderId },
         data: { status: "PENDING" },
       });
+
+      // Send rejection email to customer
+      sendPaymentStatusEmail({
+        orderNumber: payment.order.orderNumber,
+        customerName: payment.order.user.name || "Customer",
+        customerEmail: payment.order.user.email,
+        totalAmount: Number(payment.amount),
+        status: "rejected",
+        notes: input.notes,
+      }).catch((err) => console.error("Payment email failed:", err));
 
       return { success: true };
     }),
