@@ -4,6 +4,7 @@ import { Providers } from "./_components/Providers";
 import PWAInstaller from "./_components/PWAInstaller";
 import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
+import OnlineStatus from "./_components/OnlineStatus";
 
 export const metadata: Metadata = {
   title: {
@@ -71,6 +72,7 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           <SplashScreen />
+          <OnlineStatus />
           {children}
           <BottomNav />
           <PWAInstaller />
