@@ -26,11 +26,11 @@ function HomeContent() {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Debounce search - wait 500ms after user stops typing
+  // Debounce search - wait 1000ms (1 second) after user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(searchInput);
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [searchInput]);
@@ -50,6 +50,38 @@ function HomeContent() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+
+  // Flying animation states
+  const [flyingItems, setFlyingItems] = useState<Array<{
+    id: string;
+    type: 'cart' | 'wishlist';
+    startX: number;
+    startY: number;
+    image: string;
+  }>>([]);
+
+  // Trigger flying animation
+  const triggerFlyingAnimation = (
+    buttonElement: HTMLElement,
+    type: 'cart' | 'wishlist',
+    imageUrl: string
+  ) => {
+    const rect = buttonElement.getBoundingClientRect();
+    const itemId = Date.now().toString();
+
+    setFlyingItems(prev => [...prev, {
+      id: itemId,
+      type,
+      startX: rect.left + rect.width / 2,
+      startY: rect.top + rect.height / 2,
+      image: imageUrl
+    }]);
+
+    // Remove after animation completes
+    setTimeout(() => {
+      setFlyingItems(prev => prev.filter(item => item.id !== itemId));
+    }, 1000);
+  };
 
   // Fetch wishlist items if logged in
   const { data: wishlistData } = trpc.wishlist.getAll.useQuery(undefined, {
@@ -428,15 +460,31 @@ function HomeContent() {
                 return (
                   <div
                     key={product.id}
-                    className="bg-white rounded-lg overflow-hidden transition-all hover:shadow-xl relative group"
+                    className="bg-white rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 relative group"
                     style={{
-                      border: '1px solid var(--gray-30)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                      border: '2px solid rgba(255,117,91,0.08)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                      background: 'linear-gradient(to bottom, rgba(255,117,91,0.02) 0%, white 100%)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(255,117,91,0.15), 0 0 0 2px rgba(255,117,91,0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255,117,91,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
+                      e.currentTarget.style.borderColor = 'rgba(255,117,91,0.08)';
                     }}
                   >
                   {/* Wishlist Icon - Top Right */}
                   <button
-                    className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-red-50 hover:scale-110"
+                    className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    style={{
+                      background: wishlistItems.has(product.id)
+                        ? 'linear-gradient(135deg, rgba(255,117,91,0.2), rgba(255,87,51,0.2))'
+                        : 'rgba(255,255,255,0.9)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      border: wishlistItems.has(product.id) ? '2px solid rgba(255,117,91,0.3)' : '2px solid rgba(0,0,0,0.05)'
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -446,15 +494,22 @@ function HomeContent() {
                         return;
                       }
 
+                      const isAdding = !wishlistItems.has(product.id);
+
+                      if (isAdding) {
+                        triggerFlyingAnimation(e.currentTarget, 'wishlist', imageUrl);
+                      }
+
                       toggleWishlist.mutate({ productId: product.id });
                     }}
                     disabled={toggleWishlist.isPending}
                   >
                     <Heart
-                      className="w-4 h-4 transition-all"
+                      className="w-5 h-5 transition-all"
                       style={{
-                        color: wishlistItems.has(product.id) ? 'var(--primary)' : 'var(--gray-60)',
-                        fill: wishlistItems.has(product.id) ? 'var(--primary)' : 'none'
+                        color: wishlistItems.has(product.id) ? '#FF5733' : '#94a3b8',
+                        fill: wishlistItems.has(product.id) ? '#FF5733' : 'none',
+                        strokeWidth: 2
                       }}
                     />
                   </button>
@@ -476,7 +531,11 @@ function HomeContent() {
 
                     {/* Stock Badge */}
                     {product.stock > 0 && (
-                      <div className="absolute top-3 left-3 px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                      <div className="absolute top-4 left-4 px-3 py-1.5 text-white text-xs font-bold rounded-full backdrop-blur-md" style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                        border: '2px solid rgba(255,255,255,0.3)'
+                      }}>
                         Stok Tersedia
                       </div>
                     )}
@@ -558,6 +617,9 @@ function HomeContent() {
                           : product.images;
                         const imageUrl = images && images[0] ? images[0] : "/placeholder.png";
 
+                        // Trigger flying animation
+                        triggerFlyingAnimation(e.currentTarget, 'cart', imageUrl);
+
                         addToCart({
                           productId: product.id,
                           name: product.name,
@@ -566,13 +628,14 @@ function HomeContent() {
                           image: imageUrl,
                           slug: product.slug
                         });
-
-                        // Show success feedback
-                        alert(`✓ ${quantity}x ${product.name} ditambahkan ke keranjang!`);
                       }}
-                      className="w-full py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full transition-all hover:bg-gray-800 flex items-center justify-center gap-2"
+                      className="w-full py-3 text-white text-sm font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group"
+                      style={{
+                        background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
+                        boxShadow: '0 6px 20px rgba(255, 117, 91, 0.3)'
+                      }}
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      <ShoppingCart className="w-4 h-4 transition-transform group-hover:scale-110" />
                       Tambah ke Keranjang
                     </button>
 
@@ -614,10 +677,19 @@ function HomeContent() {
               return (
                 <div
                   key={product.id}
-                  className="bg-white rounded-lg overflow-hidden transition-all hover:shadow-xl relative"
+                  className="bg-white rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-1 relative"
                   style={{
-                    border: '1px solid var(--gray-30)',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                    border: '2px solid rgba(255,117,91,0.08)',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                    background: 'linear-gradient(to right, rgba(255,117,91,0.02) 0%, white 100%)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 16px 32px rgba(255,117,91,0.15), 0 0 0 2px rgba(255,117,91,0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(255,117,91,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
+                    e.currentTarget.style.borderColor = 'rgba(255,117,91,0.08)';
                   }}
                 >
                   <div className="flex flex-col sm:flex-row gap-4 p-4">
@@ -630,7 +702,11 @@ function HomeContent() {
                       />
                       {/* Stock Badge */}
                       {product.stock > 0 && (
-                        <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                        <div className="absolute top-3 left-3 px-3 py-1.5 text-white text-xs font-bold rounded-full backdrop-blur-md" style={{
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                          border: '2px solid rgba(255,255,255,0.3)'
+                        }}>
                           Stok Tersedia
                         </div>
                       )}
@@ -641,7 +717,14 @@ function HomeContent() {
                       <div>
                         {/* Wishlist Button */}
                         <button
-                          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-red-50 hover:scale-110"
+                          className="absolute top-5 right-5 z-10 w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110"
+                          style={{
+                            background: wishlistItems.has(product.id)
+                              ? 'linear-gradient(135deg, rgba(255,117,91,0.2), rgba(255,87,51,0.2))'
+                              : 'rgba(255,255,255,0.9)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            border: wishlistItems.has(product.id) ? '2px solid rgba(255,117,91,0.3)' : '2px solid rgba(0,0,0,0.05)'
+                          }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -651,15 +734,22 @@ function HomeContent() {
                               return;
                             }
 
+                            const isAdding = !wishlistItems.has(product.id);
+
+                            if (isAdding) {
+                              triggerFlyingAnimation(e.currentTarget, 'wishlist', imageUrl);
+                            }
+
                             toggleWishlist.mutate({ productId: product.id });
                           }}
                           disabled={toggleWishlist.isPending}
                         >
                           <Heart
-                            className="w-4 h-4 transition-all"
+                            className="w-5 h-5 transition-all"
                             style={{
-                              color: wishlistItems.has(product.id) ? 'var(--primary)' : 'var(--gray-60)',
-                              fill: wishlistItems.has(product.id) ? 'var(--primary)' : 'none'
+                              color: wishlistItems.has(product.id) ? '#FF5733' : '#94a3b8',
+                              fill: wishlistItems.has(product.id) ? '#FF5733' : 'none',
+                              strokeWidth: 2
                             }}
                           />
                         </button>
@@ -734,6 +824,9 @@ function HomeContent() {
                               : product.images;
                             const imageUrl = images && images[0] ? images[0] : "/placeholder.png";
 
+                            // Trigger flying animation
+                            triggerFlyingAnimation(e.currentTarget, 'cart', imageUrl);
+
                             addToCart({
                               productId: product.id,
                               name: product.name,
@@ -742,12 +835,14 @@ function HomeContent() {
                               image: imageUrl,
                               slug: product.slug
                             });
-
-                            alert(`✓ ${quantity}x ${product.name} ditambahkan ke keranjang!`);
                           }}
-                          className="flex-1 sm:flex-initial px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full transition-all hover:bg-gray-800 flex items-center justify-center gap-2"
+                          className="flex-1 sm:flex-initial px-6 py-3 text-white text-sm font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group"
+                          style={{
+                            background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
+                            boxShadow: '0 6px 20px rgba(255, 117, 91, 0.3)'
+                          }}
                         >
-                          <ShoppingCart className="w-4 h-4" />
+                          <ShoppingCart className="w-4 h-4 transition-transform group-hover:scale-110" />
                           Tambah ke Keranjang
                         </button>
                       </div>
@@ -864,6 +959,69 @@ function HomeContent() {
           </div>
         </div>
       </footer>
+
+      {/* Flying Items Animation */}
+      {flyingItems.map((item) => {
+        // Get target position (cart or wishlist icon in navbar)
+        const targetElement = document.querySelector(
+          item.type === 'cart'
+            ? 'a[href="/cart"]'
+            : 'a[href="/wishlist"]'
+        );
+
+        let endX = window.innerWidth / 2;
+        let endY = 50;
+
+        if (targetElement) {
+          const rect = targetElement.getBoundingClientRect();
+          endX = rect.left + rect.width / 2;
+          endY = rect.top + rect.height / 2;
+        }
+
+        return (
+          <div
+            key={item.id}
+            className="fixed z-[9999] pointer-events-none"
+            style={{
+              left: `${item.startX}px`,
+              top: `${item.startY}px`,
+              animation: `flyToTarget 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+              '--end-x': `${endX - item.startX}px`,
+              '--end-y': `${endY - item.startY}px`,
+            } as React.CSSProperties}
+          >
+            <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-2xl animate-pulse" style={{
+              border: '3px solid',
+              borderColor: item.type === 'cart' ? '#FF755B' : '#FF5733',
+              background: 'white'
+            }}>
+              <img
+                src={item.image}
+                alt="Flying item"
+                className="w-full h-full object-contain p-1"
+              />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Keyframes for flying animation */}
+      <style jsx>{`
+        @keyframes flyToTarget {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5)) scale(0.8);
+            opacity: 0.9;
+          }
+          100% {
+            transform: translate(var(--end-x), var(--end-y)) scale(0.3);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </>
   );
 }

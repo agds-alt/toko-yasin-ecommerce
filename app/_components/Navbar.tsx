@@ -53,15 +53,19 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b" style={{borderColor: 'var(--gray-30)'}}>
+    <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b shadow-sm transition-all duration-300" style={{borderColor: 'rgba(255,117,91,0.1)'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
-          {/* Logo - Bold & Prominent */}
+          {/* Logo - Bold & Prominent with Gradient */}
           <Link href="/" className="flex items-center group shrink-0">
-            <span className="text-2xl sm:text-3xl font-black transition-colors" style={{
-              color: 'var(--gray-900)',
+            <span className="text-2xl sm:text-3xl font-black transition-all duration-300 group-hover:scale-105" style={{
+              background: 'linear-gradient(135deg, #FF755B 0%, #FF9A76 50%, #FF755B 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               fontFamily: 'Urbanist',
-              letterSpacing: '-0.02em'
+              letterSpacing: '-0.02em',
+              backgroundSize: '200% auto'
             }}>
               TOKO BUKU ABDUL
             </span>
@@ -70,9 +74,9 @@ export default function Navbar() {
           {/* Search Bar - Prominent Center (Desktop) */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-4">
             <form onSubmit={handleSearch} className="w-full relative">
-              <div className="flex items-center border rounded-full overflow-hidden transition-all" style={{
-                borderColor: searchFocused ? 'var(--primary)' : 'var(--gray-30)',
-                boxShadow: searchFocused ? '0 0 0 3px rgba(255, 117, 91, 0.1)' : 'none'
+              <div className="flex items-center border-2 rounded-2xl overflow-hidden transition-all duration-300 bg-gradient-to-r from-gray-50/50 to-white/50 backdrop-blur-sm" style={{
+                borderColor: searchFocused ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
+                boxShadow: searchFocused ? '0 8px 24px rgba(255, 117, 91, 0.15), 0 0 0 3px rgba(255, 117, 91, 0.1)' : '0 2px 8px rgba(0,0,0,0.04)'
               }}>
                 {/* Category Dropdown */}
                 <div className="relative">
@@ -170,23 +174,23 @@ export default function Navbar() {
             {/* Account */}
             <Link
               href={session ? "/profile" : "/auth/login"}
-              className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group"
+              className="flex flex-col items-center p-2 px-3 transition-all duration-300 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 rounded-xl group"
               style={{color: 'var(--gray-60)'}}
             >
-              <User className="w-5 h-5 mb-0.5" />
+              <User className="w-5 h-5 mb-0.5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
               <span className="text-xs font-medium">Akun</span>
             </Link>
 
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group relative"
+              className="flex flex-col items-center p-2 px-3 transition-all duration-300 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 rounded-xl group relative"
               style={{color: 'var(--gray-60)'}}
             >
               <div className="relative">
-                <Heart className="w-5 h-5 mb-0.5" />
+                <Heart className="w-5 h-5 mb-0.5 transition-all group-hover:scale-110 group-hover:text-red-500 group-hover:fill-red-100" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                  <span className="absolute -top-1 -right-1 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full animate-pulse" style={{background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)', fontSize: '10px', boxShadow: '0 2px 6px rgba(255,87,51,0.3)'}}>
                     {wishlistCount}
                   </span>
                 )}
@@ -197,22 +201,22 @@ export default function Navbar() {
             {/* Cart with Total */}
             <Link
               href="/cart"
-              className="flex items-center gap-3 ml-2 px-4 py-2 rounded-full border transition-all hover:border-gray-900"
-              style={{borderColor: 'var(--gray-30)'}}
+              className="flex items-center gap-3 ml-2 px-4 py-2.5 rounded-2xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group bg-gradient-to-br from-orange-50/50 to-red-50/50"
+              style={{borderColor: 'rgba(255,117,91,0.2)'}}
             >
               <div className="relative">
-                <ShoppingCart className="w-5 h-5" style={{color: 'var(--gray-900)'}} />
+                <ShoppingCart className="w-5 h-5 transition-transform group-hover:scale-110" style={{color: 'var(--primary)'}} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                  <span className="absolute -top-2 -right-2 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full animate-pulse" style={{background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)', fontSize: '10px', boxShadow: '0 2px 8px rgba(255,87,51,0.4)'}}>
                     {cartCount}
                   </span>
                 )}
               </div>
               <div className="text-left">
-                <p className="text-xs" style={{color: 'var(--gray-60)'}}>
+                <p className="text-xs font-medium" style={{color: 'var(--gray-60)'}}>
                   {cartCount} item
                 </p>
-                <p className="text-sm font-bold" style={{color: 'var(--gray-900)'}}>
+                <p className="text-sm font-black" style={{color: 'var(--primary)'}}>
                   Rp {totalPrice.toLocaleString('id-ID')}
                 </p>
               </div>
@@ -222,20 +226,10 @@ export default function Navbar() {
             {!session && (
               <Link
                 href="/auth/login"
-                className="ml-2 text-white text-sm font-medium transition-all"
+                className="ml-2 px-6 py-2.5 text-white text-sm font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
                 style={{
-                  backgroundColor: 'var(--primary)',
-                  borderRadius: 'var(--radius-default)',
-                  padding: '0.7em 0.8em',
-                  display: 'inline-block',
-                  textDecoration: 'none'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.textDecoration = 'underline dotted';
-                  e.currentTarget.style.textUnderlineOffset = '3px';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.textDecoration = 'none';
+                  background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
+                  boxShadow: '0 4px 12px rgba(255, 117, 91, 0.25)'
                 }}
               >
                 Login
@@ -245,8 +239,12 @@ export default function Navbar() {
             {session && (
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="ml-2 flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:opacity-80"
-                style={{color: 'var(--accent-red)'}}
+                className="ml-2 flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold rounded-2xl border-2 transition-all duration-300 hover:scale-105 hover:bg-red-50"
+                style={{
+                  color: '#EF4444',
+                  borderColor: 'rgba(239, 68, 68, 0.2)',
+                  backgroundColor: 'rgba(254, 226, 226, 0.3)'
+                }}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -363,27 +361,22 @@ export default function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium transition-colors hover:text-gray-900"
-                  style={{color: 'var(--gray-60)'}}
+                  className="block mx-4 my-2 px-4 py-3 text-white text-sm font-bold text-center rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
+                    boxShadow: '0 4px 12px rgba(255, 117, 91, 0.25)'
+                  }}
                 >
                   Login
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block mx-4 my-2 px-4 py-2 text-white text-sm font-medium transition-all hover:opacity-90 text-center"
+                  className="block mx-4 px-4 py-3 text-sm font-bold text-center rounded-2xl border-2 transition-all duration-300 hover:scale-105"
                   style={{
-                    backgroundColor: 'var(--primary)',
-                    borderRadius: 'var(--radius-default)',
-                    padding: '0.7em 0.8em',
-                    textDecoration: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.textDecoration = 'underline dotted';
-                    e.currentTarget.style.textUnderlineOffset = '3px';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.textDecoration = 'none';
+                    color: '#FF755B',
+                    borderColor: 'rgba(255, 117, 91, 0.3)',
+                    backgroundColor: 'rgba(255, 117, 91, 0.05)'
                   }}
                 >
                   Daftar

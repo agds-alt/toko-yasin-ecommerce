@@ -230,42 +230,93 @@ export default function ProductDetailPage() {
           {/* Product Detail Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 bg-white rounded-3xl shadow-xl p-6 lg:p-10">
             {/* Left: Images */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-square relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden border-2 border-gray-200">
-                <img
-                  src={currentImage}
-                  alt={product.name}
-                  className="w-full h-full object-contain p-8"
-                />
+            <div className="space-y-6">
+              {/* Main Image with Navigation */}
+              <div className="relative group">
+                <div className="aspect-square relative bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-3xl overflow-hidden shadow-lg">
+                  <img
+                    src={currentImage}
+                    alt={product.name}
+                    className="w-full h-full object-contain p-8 transition-transform duration-300 group-hover:scale-105"
+                  />
 
-                {product.stock === 0 && (
-                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                    <span className="bg-red-600 text-white text-xl font-bold px-6 py-3 rounded-full shadow-xl">
-                      ❌ Stok Habis
-                    </span>
+                  {product.stock === 0 && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                      <span className="bg-gradient-to-r from-red-600 to-red-700 text-white text-xl font-bold px-8 py-4 rounded-2xl shadow-2xl">
+                        ❌ Stok Habis
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Navigation Arrows */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Image Counter Badge */}
+                  {images.length > 1 && (
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      {selectedImageIndex + 1} / {images.length}
+                    </div>
+                  )}
+                </div>
+
+                {/* Navigation Dots */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`transition-all duration-300 rounded-full ${
+                          selectedImageIndex === index
+                            ? "bg-blue-600 w-8 h-2"
+                            : "bg-gray-300 hover:bg-gray-400 w-2 h-2"
+                        }`}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Thumbnail Images */}
+              {/* Thumbnail Grid */}
               {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-5 gap-3">
                   {images.map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square relative bg-gray-100 rounded-xl overflow-hidden border-2 transition-all ${
+                      className={`aspect-square relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden transition-all duration-300 ${
                         selectedImageIndex === index
-                          ? "border-blue-500 ring-2 ring-blue-300"
-                          : "border-gray-200 hover:border-blue-300"
+                          ? "ring-4 ring-blue-500 ring-offset-2 scale-105 shadow-lg"
+                          : "hover:ring-2 hover:ring-blue-300 hover:scale-105 shadow-sm hover:shadow-md"
                       }`}
                     >
                       <img
                         src={img}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-contain p-3"
                       />
+                      {selectedImageIndex === index && (
+                        <div className="absolute inset-0 bg-blue-500/10 pointer-events-none"></div>
+                      )}
                     </button>
                   ))}
                 </div>
