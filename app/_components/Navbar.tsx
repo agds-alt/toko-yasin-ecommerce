@@ -55,7 +55,8 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b shadow-sm transition-all duration-300" style={{borderColor: 'rgba(255,117,91,0.1)'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between h-20 gap-4">
           {/* Logo - Bold & Prominent with Gradient */}
           <Link href="/" className="flex items-center group shrink-0">
             <span className="text-2xl sm:text-3xl font-black transition-all duration-300 group-hover:scale-105" style={{
@@ -71,8 +72,8 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Search Bar - Prominent Center (Desktop) */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-4">
+          {/* Search Bar - Prominent Center (Desktop Only) */}
+          <div className="flex flex-1 max-w-2xl mx-4">
             <form onSubmit={handleSearch} className="w-full relative">
               <div className="flex items-center border-2 rounded-2xl overflow-hidden transition-all duration-300 bg-gradient-to-r from-gray-50/50 to-white/50 backdrop-blur-sm" style={{
                 borderColor: searchFocused ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
@@ -169,8 +170,8 @@ export default function Navbar() {
             </form>
           </div>
 
-          {/* Right Side Icons - Desktop */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* Right Side Icons - Desktop Only */}
+          <div className="flex items-center gap-1">
             {/* Account */}
             <Link
               href={session ? "/profile" : "/auth/login"}
@@ -251,63 +252,58 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile: Wishlist + Cart + Menu */}
-          <div className="flex md:hidden items-center gap-2">
-            <Link
-              href="/wishlist"
-              className="relative p-2"
-              style={{color: 'var(--gray-60)'}}
-            >
-              <Heart className="w-6 h-6" />
-              {wishlistCount > 0 && (
-                <span className="absolute top-0 right-0 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              href="/cart"
-              className="relative p-2"
-              style={{color: 'var(--gray-60)'}}
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 transition-colors hover:text-gray-900"
-              style={{color: 'var(--gray-60)'}}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
         </div>
 
-        {/* Mobile Search */}
-        <div className="md:hidden pb-4">
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              placeholder="Cari produk..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-4 pr-12 text-sm border rounded-full outline-none focus:border-primary"
-              style={{borderColor: 'var(--gray-30)'}}
-            />
-            <button
-              type="submit"
-              className="absolute right-1 top-1 h-10 w-10 rounded-full flex items-center justify-center text-white"
-              style={{backgroundColor: 'var(--primary)'}}
-            >
-              <Search className="w-4 h-4" />
-            </button>
+        {/* Mobile Header - Shopee Style */}
+        <div className="md:hidden flex items-center gap-2 h-14">
+          {/* Search Bar - Full Width */}
+          <form onSubmit={handleSearch} className="flex-1 relative">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Cari produk..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-4 pr-10 text-sm border rounded-lg outline-none focus:border-primary bg-gray-50"
+                style={{borderColor: 'var(--gray-30)'}}
+              />
+              <button
+                type="submit"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center"
+                style={{color: 'var(--primary)'}}
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
           </form>
+
+          {/* Wishlist Icon */}
+          <Link
+            href="/wishlist"
+            className="relative p-2 shrink-0"
+            style={{color: 'var(--gray-60)'}}
+          >
+            <Heart className="w-6 h-6" />
+            {wishlistCount > 0 && (
+              <span className="absolute top-0 right-0 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+
+          {/* Cart Icon */}
+          <Link
+            href="/cart"
+            className="relative p-2 shrink-0"
+            style={{color: 'var(--gray-60)'}}
+          >
+            <ShoppingCart className="w-6 h-6" />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                {cartCount}
+              </span>
+            )}
+          </Link>
         </div>
 
         {/* Mobile Menu */}
