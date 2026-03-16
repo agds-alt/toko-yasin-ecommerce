@@ -7,19 +7,23 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useCart } from "../_contexts/CartContext";
+import { useSearch } from "../_contexts/SearchContext";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const { totalItems, totalPrice } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
+  // Use shared search context
+  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch();
+
   // Get categories for dropdown
   const { data: categories } = trpc.product.getCategories.useQuery();
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [localSelectedCategory, setLocalSelectedCategory] = useState("all");
 
   // Get wishlist count
   const { data: wishlistData } = trpc.wishlist.getAll.useQuery(undefined, {
@@ -27,29 +31,36 @@ export default function Navbar() {
   });
   const wishlistCount = wishlistData?.length || 0;
 
-  // Search functionality
+  // Search functionality for desktop dropdown (local state)
   const { data: searchData } = trpc.product.getAll.useQuery(
     {
-      search: searchQuery,
-      categoryId: selectedCategory !== "all" ? selectedCategory : undefined
+      search: localSearchQuery,
+      categoryId: localSelectedCategory !== "all" ? localSelectedCategory : undefined
     },
-    { enabled: searchQuery.length > 0 }
+    { enabled: localSearchQuery.length > 0 }
   );
 
   const cartCount = totalItems;
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Desktop search - navigate with params
+  const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to homepage with search params
+    if (localSearchQuery.trim()) {
       const params = new URLSearchParams();
-      params.set('search', searchQuery);
-      if (selectedCategory !== 'all') {
-        params.set('category', selectedCategory);
+      params.set('search', localSearchQuery);
+      if (localSelectedCategory !== 'all') {
+        params.set('category', localSelectedCategory);
       }
       router.push(`/?${params.toString()}`);
-      setSearchQuery(""); // Clear search after navigation
+      setLocalSearchQuery("");
     }
+  };
+
+  // Mobile search - live filter on homepage
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Just update the shared search context, no navigation
+    // The homepage will automatically update
   };
 
   return (
@@ -74,7 +85,7 @@ export default function Navbar() {
 
           {/* Search Bar - Prominent Center (Desktop Only) */}
           <div className="flex flex-1 max-w-2xl mx-4">
-            <form onSubmit={handleSearch} className="w-full relative">
+            <form onSubmit={handleDesktopSearch} className="w-full relative">
               <div className="flex items-center border-2 rounded-2xl overflow-hidden transition-all duration-300 bg-gradient-to-r from-gray-50/50 to-white/50 backdrop-blur-sm" style={{
                 borderColor: searchFocused ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
                 boxShadow: searchFocused ? '0 8px 24px rgba(255, 117, 91, 0.15), 0 0 0 3px rgba(255, 117, 91, 0.1)' : '0 2px 8px rgba(0,0,0,0.04)'
@@ -82,8 +93,8 @@ export default function Navbar() {
                 {/* Category Dropdown */}
                 <div className="relative">
                   <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    value={localSelectedCategory}
+                    onChange={(e) => setLocalSelectedCategory(e.target.value)}
                     className="h-12 pl-4 pr-8 text-sm font-medium border-r outline-none bg-white cursor-pointer appearance-none"
                     style={{borderColor: 'var(--gray-30)', color: 'var(--gray-900)'}}
                   >
@@ -105,8 +116,8 @@ export default function Navbar() {
 <input
                   type="text"
                   placeholder="Cari produk di toko..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={localSearchQuery}
+                  onChange={(e) => setLocalSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   className="flex-1 h-12 px-4 text-sm outline-none"
@@ -124,7 +135,7 @@ export default function Navbar() {
               </div>
 
               {/* Search Results Dropdown */}
-              {searchQuery.length > 0 && searchData && (
+              {localSearchQuery.length > 0 && searchData && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border max-h-96 overflow-y-auto" style={{borderColor: 'var(--gray-30)'}}>
                   {searchData.products.length > 0 ? (
                     <div className="divide-y" style={{borderColor: 'var(--gray-30)'}}>
@@ -136,7 +147,7 @@ export default function Navbar() {
                           <Link
                             key={product.id}
                             href={`/products/${product.slug}`}
-                            onClick={() => setSearchQuery("")}
+                            onClick={() => setLocalSearchQuery("")}
                             className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
                           >
                             <img
@@ -256,8 +267,8 @@ export default function Navbar() {
 
         {/* Mobile Header - Shopee Style */}
         <div className="md:hidden flex items-center gap-2 h-14">
-          {/* Search Bar - Full Width */}
-          <form onSubmit={handleSearch} className="flex-1 relative">
+          {/* Search Bar - Full Width - Live Search */}
+          <form onSubmit={handleMobileSearch} className="flex-1 relative">
             <div className="relative">
               <input
                 type="text"
@@ -267,13 +278,21 @@ export default function Navbar() {
                 className="w-full h-10 pl-4 pr-10 text-sm border rounded-lg outline-none focus:border-primary bg-gray-50"
                 style={{borderColor: 'var(--gray-30)'}}
               />
-              <button
-                type="submit"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center"
-                style={{color: 'var(--primary)'}}
-              >
-                <Search className="w-4 h-4" />
-              </button>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center"
+                  style={{color: 'var(--gray-60)'}}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              {!searchQuery && (
+                <div className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center pointer-events-none" style={{color: 'var(--primary)'}}>
+                  <Search className="w-4 h-4" />
+                </div>
+              )}
             </div>
           </form>
 

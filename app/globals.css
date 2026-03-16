@@ -96,6 +96,15 @@ html {
   .text-balance {
     text-wrap: balance;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Add padding bottom on mobile to prevent content from being hidden behind BottomNav */

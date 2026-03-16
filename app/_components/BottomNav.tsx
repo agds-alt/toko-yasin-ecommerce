@@ -81,7 +81,7 @@ export default function BottomNav() {
         }}
       >
         {/* Navigation Card - Floating Style */}
-        <div className="relative mx-6 mb-6 pointer-events-auto">
+        <div className="relative mx-6 mb-2 pointer-events-auto">
           <div className="bg-white rounded-[2rem] shadow-2xl border-2 border-gray-200/80 px-2 py-1">
             <div className="flex items-center justify-around">
               {navItems.map((item) => {

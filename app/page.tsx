@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart,
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "./_contexts/CartContext";
+import { useSearch } from "./_contexts/SearchContext";
 
 function HomeContent() {
   const { data: session } = useSession();
@@ -16,28 +17,19 @@ function HomeContent() {
   const { addToCart } = useCart();
   const searchParams = useSearchParams();
 
-  // Filter & Search States
-  const [searchInput, setSearchInput] = useState(""); // Input value
-  const [searchQuery, setSearchQuery] = useState(""); // Actual query sent to API
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  // Use shared search context from Navbar
+  const { searchQuery, selectedCategory: contextCategory, setSelectedCategory } = useSearch();
+
+  // Filter States
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
   const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc" | "name_asc" | "name_desc">("newest");
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Debounce search - wait 1000ms (1 second) after user stops typing
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(searchInput);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
   const { data, isLoading } = trpc.product.getAll.useQuery({
     search: searchQuery || undefined,
-    categoryId: selectedCategory,
+    categoryId: contextCategory,
     minPrice,
     maxPrice,
     sortBy,
@@ -311,139 +303,108 @@ function HomeContent() {
       </section>
 
       {/* Products Grid */}
-      <section id="products" className="bg-white pt-8 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 lg:pb-24">
+      <section id="products" className="bg-white pt-2 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 lg:pb-24">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          {/* Search & Filter Bar */}
-          <div className="mb-6 sm:mb-8 space-y-4">
-            {/* Search Bar + Mobile Filter Toggle */}
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Cari produk..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setSearchQuery(searchInput);
-                    }
-                  }}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                />
-                {searchInput && searchInput !== searchQuery && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                    Tekan Enter
-                  </div>
-                )}
+          {/* Category Pills - Shopee Style */}
+          <div className="mb-2 space-y-2">
+            {/* Horizontal Scrollable Categories */}
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 pb-1">
+                <button
+                  onClick={() => setSelectedCategory(undefined)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                    !contextCategory
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Semua
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                      contextCategory === cat.id
+                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            {/* Compact Filter Row */}
+            <div className="flex items-center gap-2">
+              {/* Sort Dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="flex-1 px-3 py-2 text-sm border rounded-lg outline-none bg-white"
+                style={{borderColor: 'var(--gray-30)'}}
+              >
+                <option value="newest">🆕 Terbaru</option>
+                <option value="price_asc">💰 Termurah</option>
+                <option value="price_desc">💎 Termahal</option>
+                <option value="name_asc">🔤 A-Z</option>
+                <option value="name_desc">🔤 Z-A</option>
+              </select>
+
+              {/* Filter Button */}
               <button
                 onClick={() => setShowMobileFilter(!showMobileFilter)}
-                className="lg:hidden flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-100 hover:bg-gray-200"
               >
-                <SlidersHorizontal className="w-5 h-5" />
-                <span className="font-semibold">Filter</span>
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="hidden sm:inline">Filter</span>
               </button>
             </div>
 
-            {/* Filter & Sort - Desktop */}
-            <div className={`lg:flex items-center gap-4 flex-wrap ${showMobileFilter ? 'block' : 'hidden'}`}>
-              {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-700">Kategori:</span>
-                <select
-                  value={selectedCategory || ""}
-                  onChange={(e) => setSelectedCategory(e.target.value || undefined)}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all cursor-pointer"
-                >
-                  <option value="">Semua</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {/* Advanced Filter Panel (Collapsible) */}
+            {showMobileFilter && (
+              <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                {/* Price Range */}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Rentang Harga:</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={minPrice || ""}
+                      onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg outline-none"
+                      style={{borderColor: 'var(--gray-30)'}}
+                    />
+                    <span className="text-gray-400">-</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={maxPrice || ""}
+                      onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg outline-none"
+                      style={{borderColor: 'var(--gray-30)'}}
+                    />
+                  </div>
+                </div>
 
-              {/* Price Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-700">Harga:</span>
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={minPrice || ""}
-                  onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                />
-                <span className="text-gray-400">-</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={maxPrice || ""}
-                  onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                />
+                {/* Clear Filters */}
+                {(contextCategory || minPrice || maxPrice || searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(undefined);
+                      setMinPrice(undefined);
+                      setMaxPrice(undefined);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                    Reset Filter
+                  </button>
+                )}
               </div>
-
-              {/* Sort By */}
-              <div className="flex items-center gap-2 ml-auto">
-                <span className="text-sm font-semibold text-gray-700">Urutkan:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all cursor-pointer"
-                >
-                  <option value="newest">Terbaru</option>
-                  <option value="price_asc">Harga: Rendah ke Tinggi</option>
-                  <option value="price_desc">Harga: Tinggi ke Rendah</option>
-                  <option value="name_asc">Nama: A-Z</option>
-                  <option value="name_desc">Nama: Z-A</option>
-                </select>
-              </div>
-
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 border-2 border-gray-200 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded transition-all ${
-                    viewMode === "grid"
-                      ? "bg-orange-500 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                  title="Grid View"
-                >
-                  <Grid3x3 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded transition-all ${
-                    viewMode === "list"
-                      ? "bg-orange-500 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                  title="List View"
-                >
-                  <List className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Clear Filters */}
-              {(selectedCategory || minPrice || maxPrice || searchQuery) && (
-                <button
-                  onClick={() => {
-                    setSelectedCategory(undefined);
-                    setMinPrice(undefined);
-                    setMaxPrice(undefined);
-                    setSearchInput("");
-                    setSearchQuery("");
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                >
-                  <X className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Hapus Filter</span>
-                </button>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Products Grid/List */}
