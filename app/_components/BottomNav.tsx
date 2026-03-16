@@ -121,7 +121,7 @@ export default function BottomNav() {
       >
         {/* Navigation Card - Floating Style */}
         <div className="relative mx-6 mb-6 pointer-events-auto">
-          <div className="bg-white rounded-[2rem] shadow-2xl border-2 border-gray-200/80 px-2 py-1.5">
+          <div className="bg-white rounded-[2rem] shadow-2xl border-2 border-gray-200/80 px-2 py-1">
             <div className="flex items-center justify-around">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -135,7 +135,7 @@ export default function BottomNav() {
                     key={item.name}
                     {...props}
                     className={`
-                      relative flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-[1.5rem]
+                      relative flex flex-col items-center justify-center px-3 py-1 rounded-[1.5rem]
                       transition-all duration-300 ease-out
                       ${
                         item.active
