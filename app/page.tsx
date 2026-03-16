@@ -60,6 +60,17 @@ function HomeContent() {
     image: string;
   }>>([]);
 
+  // Image modal state
+  const [imageModal, setImageModal] = useState<{
+    isOpen: boolean;
+    imageUrl: string;
+    productName: string;
+  }>({
+    isOpen: false,
+    imageUrl: '',
+    productName: ''
+  });
+
   // Trigger flying animation
   const triggerFlyingAnimation = (
     buttonElement: HTMLElement,
@@ -524,7 +535,18 @@ function HomeContent() {
 
                     {/* Quick View - Shows on Hover */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
-                      <button className="opacity-0 group-hover:opacity-100 transition-all w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-110">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setImageModal({
+                            isOpen: true,
+                            imageUrl: imageUrl,
+                            productName: product.name
+                          });
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-all w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-110"
+                      >
                         <Eye className="w-5 h-5" style={{color: 'var(--gray-900)'}} />
                       </button>
                     </div>
@@ -694,12 +716,31 @@ function HomeContent() {
                 >
                   <div className="flex flex-col sm:flex-row gap-4 p-4">
                     {/* Left: Image */}
-                    <Link href={`/products/${product.slug}`} className="relative bg-gray-50 rounded-lg overflow-hidden sm:w-48 sm:h-48 flex-shrink-0">
+                    <Link href={`/products/${product.slug}`} className="relative bg-gray-50 rounded-lg overflow-hidden sm:w-48 sm:h-48 flex-shrink-0 group">
                       <img
                         src={imageUrl}
                         alt={product.name}
                         className="w-full h-full object-contain p-4"
                       />
+
+                      {/* Quick View Button */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setImageModal({
+                              isOpen: true,
+                              imageUrl: imageUrl,
+                              productName: product.name
+                            });
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-all w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-110"
+                        >
+                          <Eye className="w-5 h-5" style={{color: 'var(--gray-900)'}} />
+                        </button>
+                      </div>
+
                       {/* Stock Badge */}
                       {product.stock > 0 && (
                         <div className="absolute top-3 left-3 px-3 py-1.5 text-white text-xs font-bold rounded-full backdrop-blur-md" style={{
@@ -1020,6 +1061,86 @@ function HomeContent() {
             transform: translate(var(--end-x), var(--end-y)) scale(0.3);
             opacity: 0;
           }
+        }
+      `}</style>
+
+      {/* Image Modal */}
+      {imageModal.isOpen && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-fadeIn"
+          style={{
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)'
+          }}
+          onClick={() => setImageModal({ isOpen: false, imageUrl: '', productName: '' })}
+        >
+          <div
+            className="relative max-w-5xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setImageModal({ isOpen: false, imageUrl: '', productName: '' })}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center hover:bg-white transition-all hover:scale-110"
+            >
+              <X className="w-5 h-5 text-gray-900" />
+            </button>
+
+            {/* Product Name Header */}
+            <div className="px-6 py-4 border-b-2 border-gray-100" style={{
+              background: 'linear-gradient(135deg, rgba(255,117,91,0.05) 0%, rgba(255,87,51,0.05) 100%)'
+            }}>
+              <h3 className="text-xl font-bold text-gray-900">{imageModal.productName}</h3>
+            </div>
+
+            {/* Image Container */}
+            <div className="relative w-full" style={{ maxHeight: '70vh' }}>
+              <img
+                src={imageModal.imageUrl}
+                alt={imageModal.productName}
+                className="w-full h-full object-contain"
+                style={{ maxHeight: '70vh' }}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t-2 border-gray-100 bg-gray-50">
+              <p className="text-sm text-gray-600 text-center">
+                Klik di luar gambar atau tombol X untuk menutup
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
         }
       `}</style>
     </>
