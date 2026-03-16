@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, LogOut, User, Menu, X, Search, Heart } from "lucide-react";
+import { ShoppingCart, LogOut, User, Menu, X, Search, Heart, Clock, Trash2 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export default function Navbar() {
   const router = useRouter();
 
   // Use shared search context
-  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch();
+  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, searchHistory, addToSearchHistory, clearSearchHistory } = useSearch();
 
   // Get categories for dropdown
   const { data: categories } = trpc.product.getCategories.useQuery();
@@ -46,6 +46,7 @@ export default function Navbar() {
   const handleDesktopSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (localSearchQuery.trim()) {
+      addToSearchHistory(localSearchQuery);
       const params = new URLSearchParams();
       params.set('search', localSearchQuery);
       if (localSelectedCategory !== 'all') {
@@ -135,46 +136,94 @@ export default function Navbar() {
               </div>
 
               {/* Search Results Dropdown */}
-              {localSearchQuery.length > 0 && searchData && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border max-h-96 overflow-y-auto" style={{borderColor: 'var(--gray-30)'}}>
-                  {searchData.products.length > 0 ? (
-                    <div className="divide-y" style={{borderColor: 'var(--gray-30)'}}>
-                      {searchData.products.slice(0, 5).map((product) => {
-                        const images = product.images || [];
-                        const imageUrl = images[0] || "/placeholder.png";
+              {searchFocused && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border max-h-96 overflow-y-auto z-50" style={{borderColor: 'var(--gray-30)'}}>
+                  {localSearchQuery.length > 0 ? (
+                    // Show search results
+                    searchData && searchData.products.length > 0 ? (
+                      <div className="divide-y" style={{borderColor: 'var(--gray-30)'}}>
+                        {searchData.products.slice(0, 5).map((product) => {
+                          const images = product.images || [];
+                          const imageUrl = images[0] || "/placeholder.png";
 
-                        return (
-                          <Link
-                            key={product.id}
-                            href={`/products/${product.slug}`}
-                            onClick={() => setLocalSearchQuery("")}
-                            className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
-                          >
-                            <img
-                              src={imageUrl}
-                              alt={product.name}
-                              className="w-16 h-16 object-contain bg-gray-100 rounded"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm truncate" style={{color: 'var(--gray-900)'}}>
-                                {product.name}
-                              </h4>
-                              <p className="text-xs" style={{color: 'var(--gray-60)'}}>
-                                {product.category?.name}
-                              </p>
-                              <p className="text-sm font-bold mt-1" style={{color: 'var(--primary)'}}>
-                                Rp {Number(product.price).toLocaleString('id-ID')}
-                              </p>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                          return (
+                            <Link
+                              key={product.id}
+                              href={`/products/${product.slug}`}
+                              onClick={() => {
+                                setLocalSearchQuery("");
+                                setSearchFocused(false);
+                              }}
+                              className="flex items-center gap-4 p-4 hover:bg-orange-50 transition-colors"
+                            >
+                              <img
+                                src={imageUrl}
+                                alt={product.name}
+                                className="w-16 h-16 object-contain bg-gray-100 rounded"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-sm truncate text-gray-900">
+                                  {product.name}
+                                </h4>
+                                <p className="text-xs text-gray-600">
+                                  {product.category?.name}
+                                </p>
+                                <p className="text-sm font-bold mt-1 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600">
+                                  Rp {Number(product.price).toLocaleString('id-ID')}
+                                </p>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center text-gray-600">
+                        <Search className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                        <p>Produk tidak ditemukan</p>
+                      </div>
+                    )
                   ) : (
-                    <div className="p-8 text-center" style={{color: 'var(--gray-60)'}}>
-                      <Search className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                      <p>Produk tidak ditemukan</p>
-                    </div>
+                    // Show search history
+                    searchHistory.length > 0 ? (
+                      <div>
+                        <div className="flex items-center justify-between p-3 border-b" style={{borderColor: 'var(--gray-30)'}}>
+                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <Clock className="w-4 h-4" />
+                            <span>Pencarian Terakhir</span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearSearchHistory();
+                            }}
+                            className="text-xs text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Hapus
+                          </button>
+                        </div>
+                        <div className="divide-y" style={{borderColor: 'var(--gray-30)'}}>
+                          {searchHistory.map((query, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setLocalSearchQuery(query);
+                                setSearchFocused(false);
+                              }}
+                              className="w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors flex items-center gap-3"
+                            >
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm text-gray-700">{query}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center text-gray-600">
+                        <Search className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Belum ada riwayat pencarian</p>
+                      </div>
+                    )
                   )}
                 </div>
               )}

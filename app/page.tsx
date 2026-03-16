@@ -39,6 +39,12 @@ function HomeContent() {
   const { data: categoriesData } = trpc.product.getCategories.useQuery();
   const categories = categoriesData || [];
 
+  // Fetch recommendations - random products
+  const { data: recommendationsData } = trpc.product.getAll.useQuery({
+    limit: 8,
+    sortBy: "newest",
+  });
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
@@ -875,6 +881,100 @@ function HomeContent() {
           {products.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg">Belum ada produk tersedia</p>
+            </div>
+          )}
+
+          {/* Recommendations Section - Mungkin Kamu Suka */}
+          {recommendationsData && recommendationsData.products.length > 0 && (
+            <div className="mt-12 md:mt-16">
+              <div className="mb-6 md:mb-8">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                  💡 Mungkin Kamu Suka
+                </h2>
+                <p className="text-sm md:text-base text-gray-600">
+                  Produk pilihan yang mungkin kamu cari
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                {recommendationsData.products.slice(0, 8).map((product) => {
+                  const images = product.images || [];
+                  const imageUrl = images[0] || "/placeholder.png";
+                  const isWishlisted = wishlistItems.has(product.id);
+
+                  return (
+                    <div
+                      key={product.id}
+                      className="group bg-white border-2 border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl hover:border-orange-200 transition-all duration-300"
+                    >
+                      {/* Product Image */}
+                      <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-white p-3 md:p-4">
+                        <Link href={`/products/${product.slug}`}>
+                          <img
+                            src={imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                          />
+                        </Link>
+
+                        {/* Wishlist Button */}
+                        {session && (
+                          <button
+                            onClick={() => handleWishlistToggle(product.id)}
+                            className={`absolute top-2 right-2 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all ${
+                              isWishlisted
+                                ? "bg-gradient-to-r from-orange-600 to-red-600 text-white"
+                                : "bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-orange-50"
+                            }`}
+                          >
+                            <Heart
+                              className={`w-4 h-4 md:w-5 md:h-5 ${
+                                isWishlisted ? "fill-current" : ""
+                              }`}
+                            />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Product Info */}
+                      <div className="p-3 md:p-4">
+                        <Link href={`/products/${product.slug}`}>
+                          <h3 className="font-semibold text-xs md:text-sm text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
+                            {product.name}
+                          </h3>
+                        </Link>
+
+                        <div className="flex items-center justify-between mb-2 md:mb-3">
+                          <p className="text-sm md:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600">
+                            Rp {Number(product.price).toLocaleString("id-ID")}
+                          </p>
+                          {product.stock <= 5 && product.stock > 0 && (
+                            <span className="text-[10px] md:text-xs text-orange-600 font-semibold">
+                              Sisa {product.stock}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Quick Add to Cart */}
+                        <button
+                          onClick={(e) => {
+                            const buttonRect = e.currentTarget.getBoundingClientRect();
+                            handleAddToCart(product.id, 1, imageUrl, {
+                              startX: buttonRect.left + buttonRect.width / 2,
+                              startY: buttonRect.top + buttonRect.height / 2,
+                            });
+                          }}
+                          disabled={product.stock === 0}
+                          className="w-full py-2 md:py-2.5 text-xs md:text-sm bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                        >
+                          <ShoppingCart className="w-3 h-3 md:w-4 md:h-4" />
+                          {product.stock === 0 ? "Habis" : "Tambah"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
