@@ -311,10 +311,10 @@ function HomeContent() {
       </section>
 
       {/* Products Grid */}
-      <section id="products" className="bg-white" style={{paddingTop: 'var(--spacing-88)', paddingBottom: 'var(--spacing-88)'}}>
-        <div style={{maxWidth: 'var(--content-max-width)', margin: '0 auto', padding: '0 var(--content-gutter)'}}>
+      <section id="products" className="bg-white pt-8 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 lg:pb-24">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           {/* Search & Filter Bar */}
-          <div className="mb-8 space-y-4">
+          <div className="mb-6 sm:mb-8 space-y-4">
             {/* Search Bar + Mobile Filter Toggle */}
             <div className="flex gap-3">
               <div className="flex-1 relative">
@@ -448,7 +448,7 @@ function HomeContent() {
 
           {/* Products Grid/List */}
           <div className={viewMode === "grid"
-            ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+            ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5"
             : "space-y-4"
           }>
             {/* Product Cards */}
