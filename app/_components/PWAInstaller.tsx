@@ -68,7 +68,9 @@ export default function PWAInstaller() {
 
   return (
     <div className="fixed bottom-24 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-slide-up">
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl shadow-2xl p-6 relative">
+      <div className="text-white rounded-2xl shadow-2xl p-6 relative" style={{
+        background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)'
+      }}>
         <button
           onClick={() => setShowInstallPrompt(false)}
           className="absolute top-3 right-3 p-1 hover:bg-white/20 rounded-lg transition-all"
@@ -78,7 +80,7 @@ export default function PWAInstaller() {
         </button>
 
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-white/20 rounded-xl">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <Download className="w-6 h-6" />
           </div>
           <div className="flex-1">
@@ -89,7 +91,8 @@ export default function PWAInstaller() {
             <div className="flex gap-2">
               <button
                 onClick={handleInstallClick}
-                className="flex-1 bg-white text-blue-600 px-4 py-2 rounded-xl font-semibold hover:bg-blue-50 transition-all"
+                className="flex-1 bg-white px-4 py-2 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+                style={{ color: '#FF5733' }}
               >
                 Install
               </button>

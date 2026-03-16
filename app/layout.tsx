@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Toko Buku Abdul",
   },
   robots: {
@@ -65,7 +65,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icons/icon-192x192.png" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#FF755B" />
       </head>
       <body className="antialiased">
         <Providers>
