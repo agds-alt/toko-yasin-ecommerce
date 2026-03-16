@@ -14,12 +14,22 @@ export const productRouter = router({
       z.object({
         categoryId: z.string().optional(),
         search: z.string().optional(),
+        minPrice: z.number().optional(),
+        maxPrice: z.number().optional(),
+        sortBy: z.enum(["newest", "price_asc", "price_desc", "name_asc", "name_desc"]).optional().default("newest"),
         limit: z.number().min(1).max(100).default(20),
         cursor: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { categoryId, search, limit, cursor } = input;
+      const { categoryId, search, minPrice, maxPrice, sortBy, limit, cursor } = input;
+
+      // Build orderBy based on sortBy
+      let orderBy: any = { createdAt: "desc" }; // default: newest
+      if (sortBy === "price_asc") orderBy = { price: "asc" };
+      else if (sortBy === "price_desc") orderBy = { price: "desc" };
+      else if (sortBy === "name_asc") orderBy = { name: "asc" };
+      else if (sortBy === "name_desc") orderBy = { name: "desc" };
 
       const products = await ctx.prisma.product.findMany({
         take: limit + 1,
@@ -33,13 +43,13 @@ export const productRouter = router({
               { description: { contains: search, mode: "insensitive" } },
             ],
           }),
+          ...(minPrice !== undefined && { price: { gte: minPrice } }),
+          ...(maxPrice !== undefined && { price: { lte: maxPrice } }),
         },
         include: {
           category: true,
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy,
       });
 
       let nextCursor: string | undefined = undefined;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "./_components/Navbar";
 import { useState, useEffect, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart, Search, Filter, X, SlidersHorizontal, Grid3x3, List } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "./_contexts/CartContext";
@@ -15,13 +15,38 @@ function HomeContent() {
   const router = useRouter();
   const { addToCart } = useCart();
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get('search') || undefined;
-  const categoryFilter = searchParams.get('category') || undefined;
+
+  // Filter & Search States
+  const [searchInput, setSearchInput] = useState(""); // Input value
+  const [searchQuery, setSearchQuery] = useState(""); // Actual query sent to API
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [minPrice, setMinPrice] = useState<number | undefined>();
+  const [maxPrice, setMaxPrice] = useState<number | undefined>();
+  const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc" | "name_asc" | "name_desc">("newest");
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Debounce search - wait 500ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const { data, isLoading } = trpc.product.getAll.useQuery({
-    search: searchQuery,
-    categoryId: categoryFilter
+    search: searchQuery || undefined,
+    categoryId: selectedCategory,
+    minPrice,
+    maxPrice,
+    sortBy,
   });
+
+  // Fetch categories for filter
+  const { data: categoriesData } = trpc.product.getCategories.useQuery();
+  const categories = categoriesData || [];
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
@@ -202,38 +227,41 @@ function HomeContent() {
             </div>
           ))}
 
-          {/* Navigation Arrows */}
+          {/* Bold Gradient Navigation Arrows */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition-all hover:bg-white/30 hover:scale-110 z-10"
+            className="absolute left-4 sm:left-6 lg:left-10 top-1/2 -translate-y-1/2 group z-20"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 flex items-center justify-center text-white transition-all duration-300 shadow-[0_8px_30px_rgba(255,87,51,0.5)] group-hover:shadow-[0_12px_40px_rgba(255,87,51,0.7)] group-hover:scale-110 group-active:scale-95 backdrop-blur-sm border-2 border-white/30">
+              <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7 stroke-[3]" />
+            </div>
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition-all hover:bg-white/30 hover:scale-110 z-10"
+            className="absolute right-4 sm:right-6 lg:right-10 top-1/2 -translate-y-1/2 group z-20"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 flex items-center justify-center text-white transition-all duration-300 shadow-[0_8px_30px_rgba(255,87,51,0.5)] group-hover:shadow-[0_12px_40px_rgba(255,87,51,0.7)] group-hover:scale-110 group-active:scale-95 backdrop-blur-sm border-2 border-white/30">
+              <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7 stroke-[3]" />
+            </div>
           </button>
 
-          {/* Dots Navigation */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {/* Bold Pills Navigation */}
+          <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/20 backdrop-blur-md px-4 py-3 rounded-full border border-white/20 z-20">
             {heroSlides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className="transition-all"
-                style={{
-                  width: currentSlide === index ? '32px' : '8px',
-                  height: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: currentSlide === index ? 'white' : 'rgba(255,255,255,0.5)',
-                  border: '1px solid rgba(255,255,255,0.3)'
-                }}
+                className="group relative transition-all duration-300"
                 aria-label={`Go to slide ${index + 1}`}
-              />
+              >
+                <div className={`transition-all duration-500 ${
+                  currentSlide === index
+                    ? 'w-10 h-2.5 rounded-full bg-gradient-to-r from-orange-400 to-red-500 shadow-[0_0_12px_rgba(255,117,91,0.8)]'
+                    : 'w-2.5 h-2.5 rounded-full bg-white/60 group-hover:bg-white group-hover:w-6'
+                }`} />
+              </button>
             ))}
           </div>
         </div>
@@ -242,63 +270,144 @@ function HomeContent() {
       {/* Products Grid */}
       <section id="products" className="bg-white" style={{paddingTop: 'var(--spacing-88)', paddingBottom: 'var(--spacing-88)'}}>
         <div style={{maxWidth: 'var(--content-max-width)', margin: '0 auto', padding: '0 var(--content-gutter)'}}>
-          <div className="text-center" style={{marginBottom: 'var(--spacing-64)'}}>
-            {/* Section Badge */}
-            <div className="inline-block mb-4">
-              <span className="text-xs font-bold uppercase tracking-widest px-4 py-2" style={{
-                color: 'var(--primary)',
-                backgroundColor: 'var(--primary-light)',
-                borderRadius: 'var(--radius-full)',
-                letterSpacing: '2px'
-              }}>
-                Koleksi Terbaru
-              </span>
+          {/* Search & Filter Bar */}
+          <div className="mb-8 space-y-4">
+            {/* Search Bar + Mobile Filter Toggle */}
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari produk..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setSearchQuery(searchInput);
+                    }
+                  }}
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                />
+                {searchInput && searchInput !== searchQuery && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                    Tekan Enter
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowMobileFilter(!showMobileFilter)}
+                className="lg:hidden flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+                <span className="font-semibold">Filter</span>
+              </button>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold" style={{
-              color: 'var(--gray-900)',
-              fontFamily: 'Urbanist',
-              marginBottom: 'var(--spacing-16)',
-              lineHeight: '1.2',
-              letterSpacing: '-0.02em'
-            }}>
-              Katalog Produk
-            </h2>
-            <p className="text-base sm:text-lg max-w-2xl mx-auto font-medium" style={{color: 'var(--gray-60)', lineHeight: '1.7'}}>
-              {products.length} Produk Berkualitas Pilihan
-            </p>
+            {/* Filter & Sort - Desktop */}
+            <div className={`lg:flex items-center gap-4 flex-wrap ${showMobileFilter ? 'block' : 'hidden'}`}>
+              {/* Category Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-700">Kategori:</span>
+                <select
+                  value={selectedCategory || ""}
+                  onChange={(e) => setSelectedCategory(e.target.value || undefined)}
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all cursor-pointer"
+                >
+                  <option value="">Semua</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Price Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-700">Harga:</span>
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={minPrice || ""}
+                  onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                />
+                <span className="text-gray-400">-</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={maxPrice || ""}
+                  onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                />
+              </div>
+
+              {/* Sort By */}
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-sm font-semibold text-gray-700">Urutkan:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all cursor-pointer"
+                >
+                  <option value="newest">Terbaru</option>
+                  <option value="price_asc">Harga: Rendah ke Tinggi</option>
+                  <option value="price_desc">Harga: Tinggi ke Rendah</option>
+                  <option value="name_asc">Nama: A-Z</option>
+                  <option value="name_desc">Nama: Z-A</option>
+                </select>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-1 border-2 border-gray-200 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded transition-all ${
+                    viewMode === "grid"
+                      ? "bg-orange-500 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  title="Grid View"
+                >
+                  <Grid3x3 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded transition-all ${
+                    viewMode === "list"
+                      ? "bg-orange-500 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  title="List View"
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Clear Filters */}
+              {(selectedCategory || minPrice || maxPrice || searchQuery) && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory(undefined);
+                    setMinPrice(undefined);
+                    setMaxPrice(undefined);
+                    setSearchInput("");
+                    setSearchQuery("");
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Hapus Filter</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Products Grid with Category Banner */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5" style={{gap: 'var(--grid-gap)'}}>
-            {/* Category Banner - Left Side */}
-            <div className="lg:col-span-1 rounded-lg overflow-hidden relative" style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
-              minHeight: '400px'
-            }}>
-              <div className="p-8 flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="text-white text-2xl font-bold mb-3" style={{fontFamily: 'Urbanist'}}>
-                    Produk Pilihan
-                  </h3>
-                  <p className="text-white/90 text-sm mb-6">
-                    Jelajahi koleksi terbaru kami
-                  </p>
-                </div>
-                <a
-                  href="#products"
-                  className="inline-flex items-center justify-center gap-2 bg-white text-indigo-600 font-semibold py-3 px-6 rounded-full transition-all hover:shadow-lg hover:scale-105"
-                >
-                  <span>Shop now</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </a>
-              </div>
-              {/* Decorative Circle */}
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-white/10"></div>
-            </div>
-
+          {/* Products Grid/List */}
+          <div className={viewMode === "grid"
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+            : "space-y-4"
+          }>
             {/* Product Cards */}
             {products.map((product) => {
               const images = typeof product.images === "string"
@@ -314,15 +423,17 @@ function HomeContent() {
                 }));
               };
 
-              return (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-lg overflow-hidden transition-all hover:shadow-xl relative group"
-                  style={{
-                    border: '1px solid var(--gray-30)',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-                  }}
-                >
+              // Grid View Card
+              if (viewMode === "grid") {
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-lg overflow-hidden transition-all hover:shadow-xl relative group"
+                    style={{
+                      border: '1px solid var(--gray-30)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                    }}
+                  >
                   {/* Wishlist Icon - Top Right */}
                   <button
                     className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-red-50 hover:scale-110"
@@ -493,6 +604,153 @@ function HomeContent() {
                         </svg>
                         Tanya?
                       </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+              // List View Card
+              return (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg overflow-hidden transition-all hover:shadow-xl relative"
+                  style={{
+                    border: '1px solid var(--gray-30)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                  }}
+                >
+                  <div className="flex flex-col sm:flex-row gap-4 p-4">
+                    {/* Left: Image */}
+                    <Link href={`/products/${product.slug}`} className="relative bg-gray-50 rounded-lg overflow-hidden sm:w-48 sm:h-48 flex-shrink-0">
+                      <img
+                        src={imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-contain p-4"
+                      />
+                      {/* Stock Badge */}
+                      {product.stock > 0 && (
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                          Stok Tersedia
+                        </div>
+                      )}
+                    </Link>
+
+                    {/* Right: Info */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        {/* Wishlist Button */}
+                        <button
+                          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:bg-red-50 hover:scale-110"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            if (!session) {
+                              router.push('/auth/login');
+                              return;
+                            }
+
+                            toggleWishlist.mutate({ productId: product.id });
+                          }}
+                          disabled={toggleWishlist.isPending}
+                        >
+                          <Heart
+                            className="w-4 h-4 transition-all"
+                            style={{
+                              color: wishlistItems.has(product.id) ? 'var(--primary)' : 'var(--gray-60)',
+                              fill: wishlistItems.has(product.id) ? 'var(--primary)' : 'none'
+                            }}
+                          />
+                        </button>
+
+                        <Link href={`/products/${product.slug}`}>
+                          <h3 className="text-lg font-bold mb-2 hover:text-primary transition-colors line-clamp-2" style={{color: 'var(--gray-900)'}}>
+                            {product.name}
+                          </h3>
+                        </Link>
+
+                        {/* Rating */}
+                        <div className="flex items-center gap-1 mb-3">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                          <span className="text-sm ml-1" style={{color: 'var(--gray-60)'}}>
+                            (0)
+                          </span>
+                        </div>
+
+                        {/* Price */}
+                        <p className="text-2xl font-black mb-4" style={{color: 'var(--primary)', fontFamily: 'Urbanist'}}>
+                          Rp {Number(product.price).toLocaleString('id-ID')}
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {/* Quantity Selector */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateQuantity(quantity - 1);
+                            }}
+                            className="w-8 h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
+                            style={{borderColor: 'var(--gray-30)'}}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => updateQuantity(parseInt(e.target.value) || 1)}
+                            className="w-12 h-8 text-center border rounded text-sm font-semibold outline-none"
+                            style={{borderColor: 'var(--gray-30)'}}
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateQuantity(quantity + 1);
+                            }}
+                            className="w-8 h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
+                            style={{borderColor: 'var(--gray-30)'}}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        {/* Add to Cart Button */}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+
+                            if (!session) {
+                              router.push('/auth/login');
+                              return;
+                            }
+
+                            const images = typeof product.images === "string"
+                              ? JSON.parse(product.images)
+                              : product.images;
+                            const imageUrl = images && images[0] ? images[0] : "/placeholder.png";
+
+                            addToCart({
+                              productId: product.id,
+                              name: product.name,
+                              price: Number(product.price),
+                              quantity: quantity,
+                              image: imageUrl,
+                              slug: product.slug
+                            });
+
+                            alert(`✓ ${quantity}x ${product.name} ditambahkan ke keranjang!`);
+                          }}
+                          className="flex-1 sm:flex-initial px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full transition-all hover:bg-gray-800 flex items-center justify-center gap-2"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          Tambah ke Keranjang
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

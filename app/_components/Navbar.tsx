@@ -21,6 +21,12 @@ export default function Navbar() {
   const { data: categories } = trpc.product.getCategories.useQuery();
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  // Get wishlist count
+  const { data: wishlistData } = trpc.wishlist.getAll.useQuery(undefined, {
+    enabled: !!session,
+  });
+  const wishlistCount = wishlistData?.length || 0;
+
   // Search functionality
   const { data: searchData } = trpc.product.getAll.useQuery(
     {
@@ -174,10 +180,17 @@ export default function Navbar() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group"
+              className="flex flex-col items-center p-2 transition-colors hover:text-gray-900 group relative"
               style={{color: 'var(--gray-60)'}}
             >
-              <Heart className="w-5 h-5 mb-0.5" />
+              <div className="relative">
+                <Heart className="w-5 h-5 mb-0.5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs font-medium">Favorit</span>
             </Link>
 
@@ -240,8 +253,21 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile: Cart + Menu */}
+          {/* Mobile: Wishlist + Cart + Menu */}
           <div className="flex md:hidden items-center gap-2">
+            <Link
+              href="/wishlist"
+              className="relative p-2"
+              style={{color: 'var(--gray-60)'}}
+            >
+              <Heart className="w-6 h-6" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-0 right-0 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full" style={{backgroundColor: 'var(--primary)', fontSize: '10px'}}>
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             <Link
               href="/cart"
               className="relative p-2"
