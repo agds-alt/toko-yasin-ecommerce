@@ -185,7 +185,7 @@ function HomeContent() {
 
       {/* Hero Slider - Journal Theme Style */}
       <section className="relative overflow-hidden bg-gray-100">
-        <div className="relative h-[400px] sm:h-[500px] lg:h-[600px]">
+        <div className="relative h-[280px] sm:h-[500px] lg:h-[600px]">
           {/* Slides */}
           {heroSlides.map((slide, index) => (
             <div
