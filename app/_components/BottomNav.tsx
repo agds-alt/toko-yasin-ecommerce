@@ -109,9 +109,9 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Bottom Navigation - Telegram Style - Always Fixed */}
+      {/* Bottom Navigation - Clean Floating Style */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 pb-safe"
+        className="md:hidden fixed bottom-0 left-0 right-0 pb-safe pointer-events-none"
         style={{
           zIndex: 9999,
           position: 'fixed',
@@ -119,12 +119,9 @@ export default function BottomNav() {
           willChange: 'transform'
         }}
       >
-        {/* Backdrop blur effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-xl pointer-events-none"></div>
-
         {/* Navigation Card - Floating Style */}
-        <div className="relative mx-8 mb-4">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-gray-200/50 px-2 py-2">
+        <div className="relative mx-6 mb-6 pointer-events-auto">
+          <div className="bg-white rounded-[2rem] shadow-2xl border-2 border-gray-200/80 px-2 py-2.5">
             <div className="flex items-center justify-around">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -142,10 +139,14 @@ export default function BottomNav() {
                       transition-all duration-300 ease-out
                       ${
                         item.active
-                          ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105"
-                          : "text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 active:scale-95"
+                          ? "text-white shadow-lg scale-105"
+                          : "text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 active:scale-95"
                       }
                     `}
+                    style={item.active ? {
+                      background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
+                      boxShadow: '0 8px 24px rgba(255, 117, 91, 0.4)'
+                    } : {}}
                   >
                     <div className="relative">
                       <Icon
@@ -251,7 +252,7 @@ export default function BottomNav() {
                           <p className="text-sm text-gray-500">
                             {product.category?.name}
                           </p>
-                          <p className="text-lg font-bold text-blue-600 mt-1">
+                          <p className="text-lg font-bold mt-1" style={{ color: '#FF5733' }}>
                             Rp {Number(product.price).toLocaleString("id-ID")}
                           </p>
                         </div>
