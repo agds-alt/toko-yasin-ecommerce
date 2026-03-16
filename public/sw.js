@@ -1,22 +1,14 @@
-// Service Worker for PWA
-const CACHE_NAME = 'toko-buku-abdul-v1';
+// Service Worker - Network Only (No Offline Caching)
+const CACHE_NAME = 'toko-buku-abdul-v2';
 const OFFLINE_URL = '/offline.html';
 
-const STATIC_CACHE_URLS = [
-  '/',
-  '/offline.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-];
-
-// Install event - cache static assets
+// Install event - only cache the offline page
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_CACHE_URLS);
+      console.log('[SW] Caching offline page only');
+      return cache.add(OFFLINE_URL);
     })
   );
   self.skipWaiting();
@@ -40,72 +32,25 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - always network first, show offline page only when network fails
 self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
-  // Skip API requests (let them go to network)
-  if (event.request.url.includes('/api/')) {
-    return;
-  }
-
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          // Cache the fetched response
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return response;
-        })
-        .catch(() => {
-          // If both cache and network fail, show offline page
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
+    fetch(event.request)
+      .catch(() => {
+        // Only show offline page for navigation requests (HTML pages)
+        if (event.request.mode === 'navigate') {
+          return caches.match(OFFLINE_URL);
+        }
+        // For other requests (images, scripts, etc), just fail
+        return new Response('Network error', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' },
         });
-    })
+      })
   );
-});
-
-// Push notification event
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data ? event.data.text() : 'New notification from Toko Buku Abdul',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1,
-    },
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Toko Buku Abdul', options)
-  );
-});
-
-// Notification click event
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification click received.');
-  event.notification.close();
-  event.waitUntil(clients.openWindow('/'));
 });
