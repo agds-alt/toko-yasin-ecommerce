@@ -526,11 +526,11 @@ function HomeContent() {
                   </button>
 
                   {/* Product Image with Quick View */}
-                  <Link href={`/products/${product.slug}`} className="block relative bg-gray-50" style={{height: '280px'}}>
+                  <Link href={`/products/${product.slug}`} className="block relative bg-gray-50 h-40 sm:h-56 lg:h-72">
                     <img
                       src={imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-contain p-4 transition-transform group-hover:scale-105"
+                      className="w-full h-full object-contain p-3 sm:p-4 transition-transform group-hover:scale-105"
                     />
 
                     {/* Quick View - Shows on Hover */}
@@ -564,51 +564,51 @@ function HomeContent() {
                   </Link>
 
                   {/* Product Info */}
-                  <div className="p-4">
+                  <div className="p-2 sm:p-4">
                     <Link href={`/products/${product.slug}`}>
                       {/* Product Name */}
-                      <h3 className="text-sm font-semibold line-clamp-2 mb-2 hover:text-primary transition-colors" style={{
+                      <h3 className="text-xs sm:text-sm font-semibold line-clamp-2 mb-1 sm:mb-2 hover:text-primary transition-colors" style={{
                         color: 'var(--gray-900)',
-                        minHeight: '2.5em'
+                        minHeight: '2em'
                       }}>
                         {product.name}
                       </h3>
                     </Link>
 
                     {/* Rating Stars */}
-                    <div className="flex items-center gap-1 mb-3">
+                    <div className="flex items-center gap-0.5 sm:gap-1 mb-2 sm:mb-3">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <Star key={star} className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400" />
                       ))}
-                      <span className="text-xs ml-1" style={{color: 'var(--gray-60)'}}>
+                      <span className="text-[10px] sm:text-xs ml-1" style={{color: 'var(--gray-60)'}}>
                         (0)
                       </span>
                     </div>
 
                     {/* Price */}
-                    <div className="mb-4">
-                      <p className="text-xl font-black" style={{color: 'var(--primary)', fontFamily: 'Urbanist'}}>
+                    <div className="mb-2 sm:mb-4">
+                      <p className="text-base sm:text-xl font-black" style={{color: 'var(--primary)', fontFamily: 'Urbanist'}}>
                         Rp {Number(product.price).toLocaleString('id-ID')}
                       </p>
                     </div>
 
                     {/* Quantity Selector */}
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
                           updateQuantity(quantity - 1);
                         }}
-                        className="w-8 h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
                         style={{borderColor: 'var(--gray-30)'}}
                       >
-                        <Minus className="w-3 h-3" />
+                        <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       </button>
                       <input
                         type="number"
                         value={quantity}
                         onChange={(e) => updateQuantity(parseInt(e.target.value) || 1)}
-                        className="w-12 h-8 text-center border rounded text-sm font-semibold outline-none"
+                        className="w-10 h-6 sm:w-12 sm:h-8 text-center border rounded text-xs sm:text-sm font-semibold outline-none"
                         style={{borderColor: 'var(--gray-30)'}}
                       />
                       <button
@@ -616,10 +616,10 @@ function HomeContent() {
                           e.preventDefault();
                           updateQuantity(quantity + 1);
                         }}
-                        className="w-8 h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded border flex items-center justify-center transition-colors hover:bg-gray-100"
                         style={{borderColor: 'var(--gray-30)'}}
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       </button>
                     </div>
 
@@ -651,19 +651,20 @@ function HomeContent() {
                           slug: product.slug
                         });
                       }}
-                      className="w-full py-3 text-white text-sm font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group"
+                      className="w-full py-2 sm:py-3 text-white text-xs sm:text-sm font-bold rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-1.5 sm:gap-2 group"
                       style={{
                         background: 'linear-gradient(135deg, #FF755B 0%, #FF5733 100%)',
                         boxShadow: '0 6px 20px rgba(255, 117, 91, 0.3)'
                       }}
                     >
-                      <ShoppingCart className="w-4 h-4 transition-transform group-hover:scale-110" />
-                      Tambah ke Keranjang
+                      <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:scale-110" />
+                      <span className="hidden sm:inline">Tambah ke Keranjang</span>
+                      <span className="sm:hidden">Tambah</span>
                     </button>
 
                     {/* Action Links */}
-                    <div className="flex items-center justify-between mt-3 text-xs">
-                      <button className="flex items-center gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
+                    <div className="flex items-center justify-between mt-2 sm:mt-3 text-[10px] sm:text-xs">
+                      <button className="flex items-center gap-0.5 sm:gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
                         e.preventDefault();
 
                         if (!session) {
@@ -674,17 +675,18 @@ function HomeContent() {
                         // TODO: Implement checkout functionality
                         alert(`Beli sekarang: ${product.name}`);
                       }}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        Beli Sekarang
+                        <span className="hidden sm:inline">Beli Sekarang</span>
+                        <span className="sm:hidden">Beli</span>
                       </button>
-                      <button className="flex items-center gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
+                      <button className="flex items-center gap-0.5 sm:gap-1 transition-colors hover:text-primary" style={{color: 'var(--gray-60)'}} onClick={(e) => {
                         e.preventDefault();
                         // TODO: Implement WhatsApp or contact functionality
                         window.open(`https://wa.me/6281234567890?text=Halo, saya ingin bertanya tentang produk ${encodeURIComponent(product.name)}`, '_blank');
                       }}>
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Tanya?
