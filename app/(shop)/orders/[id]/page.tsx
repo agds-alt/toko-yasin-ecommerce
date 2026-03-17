@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Navbar from "@/app/_components/Navbar";
 import { useSession } from "next-auth/react";
-import { Package, Truck, CheckCircle, Clock, XCircle, Upload, Camera } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, XCircle, Upload, Camera, Star } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -56,6 +56,7 @@ export default function OrderDetailPage() {
   const [deliveryProofFile, setDeliveryProofFile] = useState<File | null>(null);
   const [deliveryPreview, setDeliveryPreview] = useState<string>("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [deliveryRating, setDeliveryRating] = useState(5); // Default 5 stars
   const [isConfirmingDelivery, setIsConfirmingDelivery] = useState(false);
 
   const { data: order, isLoading, refetch } = trpc.order.getById.useQuery(
@@ -83,6 +84,7 @@ export default function OrderDetailPage() {
       setDeliveryProofFile(null);
       setDeliveryPreview("");
       setDeliveryNotes("");
+      setDeliveryRating(5);
       refetch();
     },
     onError: (error) => {
@@ -240,6 +242,7 @@ export default function OrderDetailPage() {
         orderId: order.id,
         deliveryProofImage: deliveryImageUrl,
         deliveryNotes: deliveryNotes.trim() || undefined,
+        deliveryRating: deliveryRating,
       });
     } catch (error) {
       alert(`❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -510,6 +513,27 @@ export default function OrderDetailPage() {
                         })}
                       </p>
                     </div>
+
+                    {order.deliveryRating && (
+                      <div>
+                        <span className="text-xs md:text-sm font-semibold text-gray-700">Rating Pengalaman:</span>
+                        <div className="flex items-center gap-1 mt-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-5 h-5 ${
+                                star <= order.deliveryRating!
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs md:text-sm text-gray-600 ml-2">
+                            ({order.deliveryRating}/5)
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {order.deliveryProofImage && (
                       <div>
@@ -809,6 +833,7 @@ export default function OrderDetailPage() {
                     setDeliveryProofFile(null);
                     setDeliveryPreview("");
                     setDeliveryNotes("");
+                    setDeliveryRating(5);
                   }}
                   className="text-white/80 hover:text-white transition-colors"
                 >
@@ -872,6 +897,38 @@ export default function OrderDetailPage() {
                     </label>
                   </>
                 )}
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  ⭐ Beri Rating Pengalaman Belanja
+                </label>
+                <div className="flex items-center justify-center gap-2 bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setDeliveryRating(star)}
+                      className="transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Star
+                        className={`w-10 h-10 ${
+                          star <= deliveryRating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-gray-200 text-gray-300"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-center text-gray-500 mt-2">
+                  {deliveryRating === 5 && "Sangat Puas! ⭐⭐⭐⭐⭐"}
+                  {deliveryRating === 4 && "Puas ⭐⭐⭐⭐"}
+                  {deliveryRating === 3 && "Cukup Baik ⭐⭐⭐"}
+                  {deliveryRating === 2 && "Kurang Memuaskan ⭐⭐"}
+                  {deliveryRating === 1 && "Tidak Puas ⭐"}
+                </p>
               </div>
 
               {/* Optional: Notes */}

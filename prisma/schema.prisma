@@ -129,6 +129,7 @@ model Order {
   deliveredAt         DateTime? // Waktu konfirmasi penerimaan customer
   deliveryProofImage  String?   // URL foto bukti penerimaan (opsional)
   deliveryNotes       String?   // Catatan customer saat konfirmasi (opsional)
+  deliveryRating      Int?      // Rating pengalaman belanja 1-5 stars
   payment             Payment?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt

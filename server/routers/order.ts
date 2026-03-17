@@ -546,6 +546,7 @@ export const orderRouter = router({
         orderId: z.string(),
         deliveryProofImage: z.string().url().optional(),
         deliveryNotes: z.string().optional(),
+        deliveryRating: z.number().min(1).max(5).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -593,6 +594,7 @@ export const orderRouter = router({
           deliveredAt: new Date(),
           deliveryProofImage: input.deliveryProofImage,
           deliveryNotes: input.deliveryNotes,
+          deliveryRating: input.deliveryRating,
         },
       });
 
