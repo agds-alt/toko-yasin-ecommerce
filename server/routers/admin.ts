@@ -5,6 +5,7 @@
 
 import { router, adminProcedure } from "../trpc";
 import { z } from "zod";
+import { sendShippingNotificationEmail } from "../../lib/email/index";
 
 export const adminRouter = router({
   // Get dashboard statistics
@@ -279,8 +280,20 @@ export const adminRouter = router({
         },
       });
 
-      // TODO: Send email notification to customer
-      // Will be implemented in email service
+      // Send email notification to customer
+      try {
+        await sendShippingNotificationEmail({
+          customerEmail: order.user.email,
+          customerName: order.user.name || "Customer",
+          orderNumber: order.orderNumber,
+          trackingNumber: input.trackingNumber,
+          courier: input.courier,
+        });
+        console.log(`✅ Shipping notification sent to ${order.user.email}`);
+      } catch (error) {
+        console.error("Failed to send shipping notification email:", error);
+        // Don't throw error - email failure shouldn't block the tracking upload
+      }
 
       return order;
     }),

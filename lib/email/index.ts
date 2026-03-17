@@ -39,6 +39,7 @@ interface ShippingNotificationData {
   customerName: string;
   orderNumber: string;
   trackingNumber?: string;
+  courier?: string;
   estimatedDelivery?: string;
 }
 

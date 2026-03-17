@@ -30,6 +30,7 @@ interface ShippingEmailData {
   customerName: string;
   orderNumber: string;
   trackingNumber?: string;
+  courier?: string;
   estimatedDelivery?: string;
 }
 
@@ -253,16 +254,27 @@ export function getShippingNotificationEmail(data: ShippingEmailData): string {
       </p>
 
       <!-- Shipping Box -->
-      <div style="background: linear-gradient(135deg, #10B98115 0%, #059669 15 100%); border-left: 4px solid #10B981; padding: 20px; margin: 20px 0; border-radius: 4px; text-align: center;">
+      <div style="background: linear-gradient(135deg, #10B98115 0%, #05966915 100%); border-left: 4px solid #10B981; padding: 20px; margin: 20px 0; border-radius: 4px; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 10px;">🚚</div>
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Nomor Pesanan</p>
         <p style="margin: 0; font-size: 20px; font-weight: bold; color: #333;">${data.orderNumber}</p>
         ${
-          data.trackingNumber
+          data.courier
             ? `
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #10B98130;">
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Kurir Pengiriman</p>
+          <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #10B981;">${data.courier}</p>
+        </div>
+        `
+            : ""
+        }
+        ${
+          data.trackingNumber
+            ? `
+        <div style="margin-top: ${data.courier ? "0" : "15px"}; padding-top: ${data.courier ? "0" : "15px"}; border-top: ${data.courier ? "none" : "1px solid #10B98130"};">
           <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Nomor Resi</p>
-          <p style="margin: 0; font-size: 16px; font-weight: bold; color: #10B981;">${data.trackingNumber}</p>
+          <p style="margin: 0; font-size: 16px; font-weight: bold; font-family: 'Courier New', monospace; color: #10B981; background-color: #10B98110; padding: 10px; border-radius: 4px;">${data.trackingNumber}</p>
+          <p style="margin: 10px 0 0 0; font-size: 11px; color: #059669;">📋 Salin nomor resi di atas untuk melacak paket Anda</p>
         </div>
         `
             : ""
