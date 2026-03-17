@@ -22,12 +22,12 @@ async function main() {
   const adminPassword = await hash("admin123", 10);
   const admin = await prisma.user.create({
     data: {
-      email: "admin@ecommerce.com",
+      email: "Achmadmoeslem@gmail.com",
       password: adminPassword,
-      name: "Admin",
+      name: "ACHMAD MUSLIM",
       role: "ADMIN",
-      phone: "081234567890",
-      address: "Jl. Admin No. 1, Jakarta",
+      phone: "085620061990",
+      address: "Penerbit Zara Bandung",
     },
   });
   console.log("✅ Admin created:", admin.email);
@@ -293,8 +293,8 @@ async function main() {
     data: {
       orderId: sampleOrder.id,
       bankName: "BCA",
-      accountNumber: "1234567890",
-      accountName: "Toko Yasin",
+      accountNumber: "2831373298",
+      accountName: "ACHMAD MUSLIM",
       amount: 125000,
       status: "PENDING",
     },

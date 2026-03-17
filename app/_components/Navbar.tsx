@@ -71,26 +71,22 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b shadow-sm transition-all duration-300" style={{borderColor: 'rgba(255,117,91,0.1)'}}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Desktop Header */}
-        <div className="hidden md:flex items-center justify-between h-20 gap-4">
-          {/* Logo - Bold & Prominent with Gradient */}
-          <Link href="/" className="flex items-center group shrink-0">
+        <div className="hidden md:flex items-center justify-between h-20 gap-3">
+          {/* Logo - Bold & Prominent with Blue Navy */}
+          <Link href="/" className="flex items-center group shrink-0 -ml-4">
             <span className="text-2xl sm:text-3xl font-black transition-all duration-300 group-hover:scale-105" style={{
-              background: 'linear-gradient(135deg, #d4a574 0%, #f4c794 50%, #d4a574 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: '#1a2b4a',
               fontFamily: 'Urbanist',
-              letterSpacing: '-0.02em',
-              backgroundSize: '200% auto'
+              letterSpacing: '-0.02em'
             }}>
               Qohira
             </span>
           </Link>
 
           {/* Search Bar - Prominent Center (Desktop Only) */}
-          <div className="flex flex-1 max-w-2xl mx-4">
+          <div className="flex flex-1 max-w-4xl mx-2">
             <form onSubmit={handleDesktopSearch} className="w-full relative">
               <div className="flex items-center border-2 rounded-2xl overflow-hidden transition-all duration-300 bg-gradient-to-r from-gray-50/50 to-white/50 backdrop-blur-sm" style={{
                 borderColor: searchFocused ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
@@ -101,7 +97,7 @@ export default function Navbar() {
                   <select
                     value={localSelectedCategory}
                     onChange={(e) => setLocalSelectedCategory(e.target.value)}
-                    className="h-12 pl-4 pr-8 text-sm font-medium border-r outline-none bg-white cursor-pointer appearance-none"
+                    className="h-10 pl-4 pr-8 text-sm font-medium border-r outline-none bg-white cursor-pointer appearance-none"
                     style={{borderColor: 'var(--gray-30)', color: 'var(--gray-900)'}}
                   >
                     <option value="all">All</option>
@@ -126,14 +122,14 @@ export default function Navbar() {
                   onChange={(e) => setLocalSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  className="flex-1 h-12 px-4 text-sm outline-none"
+                  className="flex-1 h-10 px-4 text-sm outline-none"
                   style={{color: 'var(--gray-900)'}}
                 />
 
                 {/* Search Button */}
                 <button
                   type="submit"
-                  className="h-12 px-6 text-white transition-all hover:opacity-90"
+                  className="h-10 px-6 text-white transition-all hover:opacity-90"
                   style={{backgroundColor: 'var(--primary)'}}
                 >
                   <Search className="w-5 h-5" />
@@ -236,7 +232,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Side Icons - Desktop Only */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 -mr-2">
             {/* Account */}
             <Link
               href={session ? "/profile" : "/auth/login"}

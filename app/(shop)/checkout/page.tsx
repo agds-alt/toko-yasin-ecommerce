@@ -205,8 +205,13 @@ export default function CheckoutPage() {
                       </p>
                       <div className="text-xs md:text-sm text-orange-800 space-y-1">
                         <p>Bank: {formData.bankName}</p>
-                        <p>No. Rekening: 1234567890</p>
-                        <p>Atas Nama: Qohira</p>
+                        <p>No. Rekening: {
+                          formData.bankName === "BCA" ? "2831373298" :
+                          formData.bankName === "Mandiri" ? "1270010509626" :
+                          formData.bankName === "BRI" ? "059801057922509" :
+                          formData.bankName === "BNI" ? "2831373298" : "2831373298"
+                        }</p>
+                        <p>Atas Nama: ACHMAD MUSLIM</p>
                       </div>
                     </div>
 

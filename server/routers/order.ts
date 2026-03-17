@@ -92,13 +92,21 @@ export const orderRouter = router({
           },
         });
 
-        // Create payment record with default Toko Yasin account info
+        // Create payment record with Penerbit Zara Bandung account info
+        // Map bank name to appropriate account number
+        const bankAccounts: Record<string, string> = {
+          BCA: "2831373298",
+          Mandiri: "1270010509626",
+          BRI: "059801057922509",
+          BNI: "2831373298", // Using BCA as fallback
+        };
+
         await tx.payment.create({
           data: {
             orderId: newOrder.id,
             bankName: input.bankName,
-            accountNumber: "1234567890", // Default account
-            accountName: "Toko Yasin", // Default account name
+            accountNumber: bankAccounts[input.bankName] || "2831373298",
+            accountName: "ACHMAD MUSLIM",
             amount: input.totalAmount,
           },
         });
