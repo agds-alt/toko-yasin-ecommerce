@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function SplashScreen() {
   const [showSplash, setShowSplash] = useState(true);
@@ -44,9 +45,21 @@ export default function SplashScreen() {
       }}
     >
       {/* Logo/Brand Name */}
-      <div className="text-center px-8 animate-fade-in">
+      <div className="text-center px-8 animate-fade-in flex flex-col items-center">
+        {/* Logo Image */}
+        <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-6 animate-bounce-slow">
+          <Image
+            src="/icons/icon-512x512.png"
+            alt="Qohira Logo"
+            fill
+            className="object-contain drop-shadow-2xl"
+            priority
+          />
+        </div>
+
+        {/* Brand Name */}
         <h1
-          className="text-7xl sm:text-8xl md:text-9xl font-black mb-4"
+          className="text-5xl sm:text-6xl md:text-7xl font-black mb-4"
           style={{
             background: "linear-gradient(135deg, #d4a574 0%, #f4c794 50%, #d4a574 100%)",
             WebkitBackgroundClip: "text",
@@ -54,7 +67,7 @@ export default function SplashScreen() {
             backgroundClip: "text",
             fontFamily: "Urbanist",
             letterSpacing: "-0.02em",
-            textShadow: "0 4px 20px rgba(212, 165, 116, 0.3)",
+            filter: "drop-shadow(0 4px 20px rgba(212, 165, 116, 0.5))",
           }}
         >
           QOHIRA
@@ -62,9 +75,9 @@ export default function SplashScreen() {
 
         {/* Tagline */}
         <p
-          className="text-white/90 text-lg sm:text-xl font-medium mt-6"
+          className="text-white/90 text-base sm:text-lg font-medium"
           style={{
-            textShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            textShadow: "0 2px 10px rgba(0,0,0,0.3)",
           }}
         >
           Buku Yasin & Al-Qur'an Berkualitas

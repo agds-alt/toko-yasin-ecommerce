@@ -68,11 +68,15 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-        <h1 className="text-3xl font-bold mb-2">Selamat Datang, Admin! 👋</h1>
-        <p className="text-blue-100">
-          Kelola toko Yasin dengan mudah dari dashboard ini
-        </p>
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
+        <div className="relative">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Selamat Datang, Admin! 👋</h1>
+          <p className="text-blue-100">
+            Kelola Qohira dengan mudah dari dashboard ini
+          </p>
+        </div>
       </div>
 
       {/* Stats Cards */}
