@@ -168,7 +168,7 @@ export default function AdminLayout({
                 <span className="text-white font-bold text-lg">Q</span>
               </div>
               <div className="flex-1">
-                <h2 className="font-bold text-gray-900">Qahira</h2>
+                <h2 className="font-bold text-gray-900">Qohira</h2>
                 <p className="text-xs text-gray-500">Admin Panel</p>
               </div>
             </div>

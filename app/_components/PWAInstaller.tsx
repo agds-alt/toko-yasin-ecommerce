@@ -84,7 +84,7 @@ export default function PWAInstaller() {
             <Download className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg mb-1">Install Qahira</h3>
+            <h3 className="font-bold text-lg mb-1">Install Qohira</h3>
             <p className="text-sm text-white/90 mb-4">
               Install aplikasi untuk akses lebih cepat dan pengalaman yang lebih baik!
             </p>

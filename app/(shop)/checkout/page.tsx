@@ -206,7 +206,7 @@ export default function CheckoutPage() {
                       <div className="text-xs md:text-sm text-orange-800 space-y-1">
                         <p>Bank: {formData.bankName}</p>
                         <p>No. Rekening: 1234567890</p>
-                        <p>Atas Nama: Qahira</p>
+                        <p>Atas Nama: Qohira</p>
                       </div>
                     </div>
 

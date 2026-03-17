@@ -77,7 +77,7 @@ export default function AdminLayout({
             </div>
             <div>
               <h1 className="font-bold text-xl">Admin Panel</h1>
-              <p className="text-xs text-blue-200">Qahira</p>
+              <p className="text-xs text-blue-200">Qohira</p>
             </div>
           </div>
           <button

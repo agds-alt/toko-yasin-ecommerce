@@ -40,33 +40,25 @@ export default function SplashScreen() {
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
       style={{
-        background: "linear-gradient(135deg, #FF755B 0%, #FF5733 100%)",
+        background: "linear-gradient(135deg, #1a2b4a 0%, #2a3b5a 100%)",
       }}
     >
       {/* Logo/Brand Name */}
       <div className="text-center px-8 animate-fade-in">
         <h1
-          className="text-5xl sm:text-6xl md:text-7xl font-black mb-4"
+          className="text-7xl sm:text-8xl md:text-9xl font-black mb-4"
           style={{
-            color: "white",
+            background: "linear-gradient(135deg, #d4a574 0%, #f4c794 50%, #d4a574 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
             fontFamily: "Urbanist",
             letterSpacing: "-0.02em",
-            textShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            textShadow: "0 4px 20px rgba(212, 165, 116, 0.3)",
           }}
         >
-          TOKO BUKU
+          QOHIRA
         </h1>
-        <h2
-          className="text-6xl sm:text-7xl md:text-8xl font-black"
-          style={{
-            color: "white",
-            fontFamily: "Urbanist",
-            letterSpacing: "-0.02em",
-            textShadow: "0 4px 20px rgba(0,0,0,0.2)",
-          }}
-        >
-          ABDUL
-        </h2>
 
         {/* Tagline */}
         <p

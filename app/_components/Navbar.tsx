@@ -85,7 +85,7 @@ export default function Navbar() {
               letterSpacing: '-0.02em',
               backgroundSize: '200% auto'
             }}>
-              QAHIRA
+              QOHIRA
             </span>
           </Link>
 
