@@ -101,3 +101,86 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// ========================================
+// PUSH NOTIFICATION HANDLERS
+// ========================================
+
+// Handle push notification event
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push notification received');
+
+  if (!event.data) {
+    console.log('[SW] Push event but no data');
+    return;
+  }
+
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = {
+      title: 'Toko Buku Abdul',
+      body: event.data.text(),
+    };
+  }
+
+  const options = {
+    body: data.body || 'Ada update baru untuk Anda',
+    icon: data.icon || '/icons/icon-192x192.png',
+    badge: data.badge || '/icons/icon-72x72.png',
+    image: data.image,
+    data: {
+      url: data.url || '/',
+      orderid: data.orderid,
+      ...data.data,
+    },
+    actions: data.actions || [
+      {
+        action: 'open',
+        title: 'Buka',
+      },
+      {
+        action: 'close',
+        title: 'Tutup',
+      },
+    ],
+    tag: data.tag || 'notification',
+    renotify: true,
+    vibrate: [200, 100, 200],
+    requireInteraction: false,
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Toko Buku Abdul', options)
+  );
+});
+
+// Handle notification click event
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action);
+
+  event.notification.close();
+
+  if (event.action === 'close') {
+    return;
+  }
+
+  // Get URL from notification data
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Check if there's already a window open
+      for (const client of clientList) {
+        if (client.url === new URL(urlToOpen, self.location.origin).href && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Open new window if no existing window found
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});

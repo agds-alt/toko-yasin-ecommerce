@@ -6,6 +6,7 @@ import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
 import OnlineStatus from "./_components/OnlineStatus";
 import WhatsAppFloat from "./_components/WhatsAppFloat";
+import PushNotificationManager from "./_components/PushNotificationManager";
 
 export const metadata: Metadata = {
   title: {
@@ -78,6 +79,7 @@ export default function RootLayout({
           <BottomNav />
           <WhatsAppFloat />
           <PWAInstaller />
+          <PushNotificationManager />
         </Providers>
       </body>
     </html>

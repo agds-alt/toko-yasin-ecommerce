@@ -13,6 +13,7 @@ import { adminRouter } from "./admin";
 import { wishlistRouter } from "./wishlist";
 import { reviewRouter } from "./review";
 import { userRouter } from "./user";
+import { notificationRouter } from "./notification";
 
 export const appRouter = router({
   product: productRouter,
@@ -24,6 +25,7 @@ export const appRouter = router({
   wishlist: wishlistRouter,
   review: reviewRouter,
   user: userRouter,
+  notification: notificationRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -13,20 +13,21 @@ datasource db {
 
 // ===== USER & AUTH =====
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String?
-  password     String
-  role         Role          @default(CUSTOMER)
-  phone        String?
-  address      String?
-  avatar       String?       // Cloudinary URL for profile picture
-  orders       Order[]
-  cart         Cart?
-  wishlistItems WishlistItem[]
-  reviews      Review[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  password          String
+  role              Role               @default(CUSTOMER)
+  phone             String?
+  address           String?
+  avatar            String?            // Cloudinary URL for profile picture
+  orders            Order[]
+  cart              Cart?
+  wishlistItems     WishlistItem[]
+  reviews           Review[]
+  pushSubscriptions PushSubscription[] // Push notification subscriptions
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([email])
 }
@@ -224,4 +225,20 @@ model Review {
   @@unique([userId, productId]) // User can only review product once
   @@index([productId])
   @@index([rating])
+}
+
+// ===== PUSH NOTIFICATIONS =====
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String?  // Optional: untuk user yang login
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique // Push service endpoint
+  p256dh    String   // Encryption key
+  auth      String   // Authentication secret
+  userAgent String?  // Device info
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([endpoint])
 }
