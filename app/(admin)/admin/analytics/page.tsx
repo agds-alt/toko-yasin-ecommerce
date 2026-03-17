@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   TrendingUp,
@@ -31,6 +31,7 @@ import { QohiraLoadingInline } from "@/app/_components/QohiraLoading";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const COLORS = {
   primary: "#3B82F6",
@@ -52,7 +53,7 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: COLORS.danger,
 };
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const [period, setPeriod] = useState<"7days" | "30days" | "90days" | "1year">("30days");
 
   const { data: analytics, isLoading } = trpc.admin.getAnalytics.useQuery({ period });
@@ -336,5 +337,13 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={<QohiraLoadingInline message="Memuat analytics data..." minHeight="600px" />}>
+      <AnalyticsContent />
+    </Suspense>
   );
 }
