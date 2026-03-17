@@ -18,9 +18,21 @@ const nextConfig: NextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
-  // experimental: {
-  //   optimizeCss: true, // Disabled due to critters dependency issue
-  // },
+  // Performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "@trpc/client",
+      "@trpc/react-query",
+    ],
+    optimizeCss: true, // Optimize CSS for production
+  },
+  // Output configuration for smaller bundles
+  output: "standalone",
   // Turbopack config to avoid error
   turbopack: {},
 };
