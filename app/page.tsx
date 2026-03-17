@@ -1004,7 +1004,7 @@ function HomeContent() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                Toko Yasin
+                Qahira
               </h3>
               <p className="text-gray-400 leading-relaxed mb-4">
                 Belanja mudah, pembayaran fleksibel via transfer bank. Produk berkualitas dengan layanan terpercaya.
@@ -1044,13 +1044,13 @@ function HomeContent() {
                   </div>
                   <span>0812-3456-7890</span>
                 </a>
-                <a href="mailto:tokoyasin@example.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                <a href="mailto:info@qahira.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(255,255,255,0.1)'}}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <span>tokoyasin@example.com</span>
+                  <span>info@qahira.com</span>
                 </a>
               </div>
             </div>
@@ -1064,7 +1064,7 @@ function HomeContent() {
                 <div className="p-4 rounded-lg" style={{backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}>
                   <p className="text-sm font-semibold text-white mb-1">Bank BCA</p>
                   <p className="text-lg font-bold text-white mb-1" style={{fontFamily: 'monospace'}}>1234567890</p>
-                  <p className="text-sm text-gray-400">a.n. Toko Yasin</p>
+                  <p className="text-sm text-gray-400">a.n. Qahira</p>
                 </div>
               </div>
             </div>
@@ -1074,7 +1074,7 @@ function HomeContent() {
           <div className="pt-8 border-t" style={{borderColor: 'rgba(255,255,255,0.1)'}}>
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-gray-400 text-sm">
-                &copy; 2026 Toko Yasin. All rights reserved.
+                &copy; 2026 Qahira. All rights reserved.
               </p>
               <div className="flex gap-6 text-sm">
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>

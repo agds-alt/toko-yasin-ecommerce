@@ -30,7 +30,7 @@ export default function AdminCustomersPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Pelanggan</h1>
         <p className="text-gray-600 mt-1">
-          Kelola data pelanggan Toko Yasin
+          Kelola data pelanggan Qahira
         </p>
       </div>
 

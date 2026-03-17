@@ -55,7 +55,7 @@ export default function AdminNotificationsPage() {
 
   const sendTestNotification = () => {
     setTitle("🔔 Test Notification");
-    setBody("Ini adalah test notification dari Toko Buku Abdul. Jika Anda menerima ini, berarti push notifications berfungsi dengan baik!");
+    setBody("Ini adalah test notification dari Qahira. Jika Anda menerima ini, berarti push notifications berfungsi dengan baik!");
     setUrl("/");
     setIcon("/icons/icon-192x192.png");
   };

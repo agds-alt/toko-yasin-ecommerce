@@ -12,41 +12,41 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    default: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
-    template: "%s | Toko Buku Abdul",
+    default: "Qahira - Buku Yasin & Al-Qur'an Berkualitas",
+    template: "%s | Qahira",
   },
   description: "Toko online terpercaya untuk Buku Yasin, Al-Qur'an berbagai ukuran, dan perlengkapan ibadah. Pembayaran manual transfer bank dengan konfirmasi cepat.",
-  keywords: ["buku yasin", "al-quran", "mushaf", "quran", "yasin", "toko buku abdul", "beli yasin online"],
-  authors: [{ name: "Toko Buku Abdul" }],
-  creator: "Toko Buku Abdul",
-  publisher: "Toko Buku Abdul",
+  keywords: ["buku yasin", "al-quran", "mushaf", "quran", "yasin", "qahira", "toko buku islam", "beli yasin online"],
+  authors: [{ name: "Qahira" }],
+  creator: "Qahira",
+  publisher: "Qahira",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://tokobukuabdul.com",
-    siteName: "Toko Buku Abdul",
-    title: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
+    url: "https://qahira.com",
+    siteName: "Qahira",
+    title: "Qahira - Buku Yasin & Al-Qur'an Berkualitas",
     description: "Toko online terpercaya untuk Buku Yasin dan Al-Qur'an berkualitas",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Toko Buku Abdul",
+        alt: "Qahira",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toko Buku Abdul - Buku Yasin & Al-Qur'an",
+    title: "Qahira - Buku Yasin & Al-Qur'an Berkualitas",
     description: "Toko online terpercaya untuk Buku Yasin dan Al-Qur'an berkualitas",
     images: ["/og-image.jpg"],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Toko Buku Abdul",
+    title: "Qahira",
   },
   robots: {
     index: true,
@@ -70,8 +70,8 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <link rel="icon" href="/icons/icon-192x192.png" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="theme-color" content="#FF755B" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="theme-color" content="#d4a574" />
       </head>
       <body className="antialiased">
         <Providers>

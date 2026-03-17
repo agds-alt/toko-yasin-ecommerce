@@ -33,7 +33,7 @@ export default function WhatsAppFloat() {
 
     // Pre-filled message
     const message = encodeURIComponent(
-      "Halo Toko Buku Abdul, saya ingin bertanya tentang produk yang tersedia."
+      "Halo Qahira, saya ingin bertanya tentang produk yang tersedia."
     );
 
     // Open WhatsApp
@@ -60,7 +60,7 @@ export default function WhatsAppFloat() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">
-                    Toko Buku Abdul
+                    Qahira
                   </p>
                   <p className="text-xs text-green-600 flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
