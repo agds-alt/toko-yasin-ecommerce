@@ -5,6 +5,7 @@ import PWAInstaller from "./_components/PWAInstaller";
 import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
 import OnlineStatus from "./_components/OnlineStatus";
+import WhatsAppFloat from "./_components/WhatsAppFloat";
 
 export const metadata: Metadata = {
   title: {
@@ -75,6 +76,7 @@ export default function RootLayout({
           <OnlineStatus />
           {children}
           <BottomNav />
+          <WhatsAppFloat />
           <PWAInstaller />
         </Providers>
       </body>
