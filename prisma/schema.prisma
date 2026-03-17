@@ -123,6 +123,9 @@ model Order {
   shippingAddress String
   shippingPhone   String
   notes           String?
+  trackingNumber  String?     // Nomor resi pengiriman
+  courier         String?     // Nama kurir (JNE, J&T, SiCepat, dll)
+  shippedAt       DateTime?   // Waktu pengiriman
   payment         Payment?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

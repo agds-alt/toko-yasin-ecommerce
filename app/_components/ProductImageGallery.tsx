@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, MouseEvent } from "react";
+import { useState, useEffect, useRef, MouseEvent } from "react";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
@@ -54,12 +54,12 @@ export default function ProductImageGallery({
   };
 
   // Add keyboard listener
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
       window.addEventListener("keydown", handleKeyDown as any);
       return () => window.removeEventListener("keydown", handleKeyDown as any);
     }
-  });
+  }, [isModalOpen]);
 
   return (
     <>

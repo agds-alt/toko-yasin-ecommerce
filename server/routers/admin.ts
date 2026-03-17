@@ -244,4 +244,44 @@ export const adminRouter = router({
         totalOrders: orders.length,
       };
     }),
+
+  // Upload tracking number (resi)
+  uploadTracking: adminProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        trackingNumber: z.string().min(1, "Nomor resi harus diisi"),
+        courier: z.string().min(1, "Nama kurir harus diisi"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Update order with tracking info and change status to SHIPPED
+      const order = await ctx.prisma.order.update({
+        where: { id: input.orderId },
+        data: {
+          trackingNumber: input.trackingNumber,
+          courier: input.courier,
+          shippedAt: new Date(),
+          status: "SHIPPED",
+        },
+        include: {
+          user: {
+            select: {
+              email: true,
+              name: true,
+            },
+          },
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      // TODO: Send email notification to customer
+      // Will be implemented in email service
+
+      return order;
+    }),
 });

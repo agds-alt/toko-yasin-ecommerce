@@ -329,6 +329,47 @@ export default function OrderDetailPage() {
                   🚚 Informasi Pengiriman
                 </h2>
 
+                {/* Tracking Info - Show when shipped */}
+                {(order.status === "SHIPPED" || order.status === "DELIVERED") && order.trackingNumber && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 md:p-4 mb-4 md:mb-6 border-2 border-blue-200">
+                    <div className="flex items-start gap-2 mb-2">
+                      <Truck className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-bold text-blue-900 text-sm md:text-lg mb-2 md:mb-3">📦 Paket Sedang Dikirim!</h4>
+                        <div className="space-y-2 text-xs md:text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-blue-800">Kurir:</span>
+                            <span className="text-blue-700 font-medium">{order.courier}</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="font-semibold text-blue-800 flex-shrink-0">No. Resi:</span>
+                            <span className="text-blue-700 font-mono font-semibold break-all select-all">{order.trackingNumber}</span>
+                          </div>
+                          {order.shippedAt && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800">Dikirim:</span>
+                              <span className="text-blue-700">
+                                {new Date(order.shippedAt).toLocaleDateString("id-ID", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-blue-100 border border-blue-300 rounded-lg p-2 md:p-3 mt-3">
+                      <p className="text-[10px] md:text-xs text-blue-800">
+                        💡 <strong>Cara Lacak Paket:</strong> Salin nomor resi di atas dan kunjungi website resmi kurir <strong>{order.courier}</strong> untuk melacak posisi paket Anda.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-3 text-gray-700 text-sm md:text-base">
                   <div>
                     <span className="font-semibold">Alamat:</span>

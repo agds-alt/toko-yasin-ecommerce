@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import { Eye, CheckCircle, XCircle, Search } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Search, Truck } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -28,8 +28,11 @@ export default function AdminOrdersPage() {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [rejectNotes, setRejectNotes] = useState("");
   const [verifyNotes, setVerifyNotes] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [courier, setCourier] = useState("");
 
   const { data: ordersData, isLoading, refetch } = trpc.order.getAll.useQuery({
     status: selectedStatus as any,
@@ -48,6 +51,20 @@ export default function AdminOrdersPage() {
       setShowVerifyModal(false);
       setSelectedOrder(null);
       setVerifyNotes("");
+      refetch();
+    },
+    onError: (error) => {
+      alert(`❌ Error: ${error.message}`);
+    },
+  });
+
+  const uploadTracking = trpc.admin.uploadTracking.useMutation({
+    onSuccess: () => {
+      alert("✅ Nomor resi berhasil diupload! Pesanan otomatis berubah status menjadi SHIPPED");
+      setShowTrackingModal(false);
+      setSelectedOrder(null);
+      setTrackingNumber("");
+      setCourier("");
       refetch();
     },
     onError: (error) => {
@@ -231,6 +248,18 @@ export default function AdminOrdersPage() {
                                 </button>
                               </>
                             )}
+                          {(order.status === "CONFIRMED" || order.status === "PROCESSING") && (
+                            <button
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setShowTrackingModal(true);
+                              }}
+                              className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-all"
+                              title="Upload Resi"
+                            >
+                              <Truck className="w-5 h-5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -324,6 +353,19 @@ export default function AdminOrdersPage() {
                         <CheckCircle className="w-4 h-4" />
                       </button>
                     )}
+
+                  {(order.status === "CONFIRMED" || order.status === "PROCESSING") && (
+                    <button
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShowTrackingModal(true);
+                      }}
+                      className="px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
+                      title="Upload Resi"
+                    >
+                      <Truck className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -488,6 +530,158 @@ export default function AdminOrdersPage() {
                 className="flex-1 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all"
               >
                 {verifyPayment.isPending ? "Verifikasi..." : "Verifikasi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Tracking Modal */}
+      {showTrackingModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4">
+          <div className="bg-white rounded-2xl p-4 md:p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
+              <Truck className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+              Upload Nomor Resi
+            </h3>
+
+            {/* Order Info */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 md:p-4 mb-4 md:mb-6">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
+                <div>
+                  <p className="text-gray-600">Order ID</p>
+                  <p className="font-semibold truncate">{selectedOrder.orderNumber}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Customer</p>
+                  <p className="font-semibold truncate">{selectedOrder.user.name}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Total</p>
+                  <p className="font-semibold text-blue-600">
+                    Rp {Number(selectedOrder.totalAmount).toLocaleString("id-ID")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Alamat Pengiriman</p>
+                  <p className="font-semibold truncate">{selectedOrder.shippingAddress}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Items */}
+            <div className="mb-4 md:mb-6">
+              <p className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+                Produk yang Dikirim
+              </p>
+              <div className="space-y-2 md:space-y-3 max-h-40 md:max-h-60 overflow-y-auto">
+                {selectedOrder.items.map((item: any) => (
+                  <div key={item.id} className="bg-gray-50 rounded-lg p-2 md:p-3 flex gap-2 md:gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-xs md:text-sm truncate">{item.product.name}</p>
+
+                      {/* Variant Info */}
+                      {item.variant && typeof item.variant === 'object' && Object.keys(item.variant).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                          {Object.entries(item.variant as Record<string, string>).map(([key, value]) => (
+                            <span
+                              key={key}
+                              className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full border font-medium bg-white text-gray-600 border-gray-300"
+                            >
+                              {key}: {value}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-[10px] md:text-sm text-gray-600">
+                        Qty: {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tracking Form */}
+            <div className="space-y-4 mb-4 md:mb-6">
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
+                  Nama Kurir <span className="text-red-600">*</span>
+                </label>
+                <select
+                  value={courier}
+                  onChange={(e) => setCourier(e.target.value)}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                >
+                  <option value="">Pilih Kurir</option>
+                  <option value="JNE">JNE</option>
+                  <option value="J&T Express">J&T Express</option>
+                  <option value="SiCepat">SiCepat</option>
+                  <option value="Anteraja">Anteraja</option>
+                  <option value="Ninja Express">Ninja Express</option>
+                  <option value="ID Express">ID Express</option>
+                  <option value="Pos Indonesia">Pos Indonesia</option>
+                  <option value="Grab Express">Grab Express</option>
+                  <option value="Gojek">Gojek</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
+                  Nomor Resi <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  placeholder="Masukkan nomor resi pengiriman"
+                />
+              </div>
+            </div>
+
+            {/* Info Alert */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 md:p-4 mb-4 md:mb-6">
+              <p className="text-xs md:text-sm text-blue-800">
+                <strong>Info:</strong> Setelah upload resi, status pesanan akan otomatis berubah menjadi <strong>SHIPPED</strong> dan customer akan menerima notifikasi email berisi nomor resi.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 md:gap-3">
+              <button
+                onClick={() => {
+                  setShowTrackingModal(false);
+                  setSelectedOrder(null);
+                  setTrackingNumber("");
+                  setCourier("");
+                }}
+                className="flex-1 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (!courier.trim()) {
+                    alert("Pilih kurir terlebih dahulu");
+                    return;
+                  }
+                  if (!trackingNumber.trim()) {
+                    alert("Masukkan nomor resi");
+                    return;
+                  }
+                  uploadTracking.mutate({
+                    orderId: selectedOrder.id,
+                    trackingNumber: trackingNumber.trim(),
+                    courier: courier.trim(),
+                  });
+                }}
+                disabled={uploadTracking.isPending}
+                className="flex-1 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all"
+              >
+                {uploadTracking.isPending ? "Uploading..." : "Upload Resi"}
               </button>
             </div>
           </div>
