@@ -2,7 +2,6 @@
 
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import dynamic from "next/dynamic";
 
 // Force dynamic rendering to avoid SSR issues with recharts
 export const dynamic = "force-dynamic";
