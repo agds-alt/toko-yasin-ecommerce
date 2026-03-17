@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/app/_components/Navbar";
+import ProductImageGallery from "@/app/_components/ProductImageGallery";
 import { useState } from "react";
 import { Star, Upload, X, CheckCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -229,98 +230,9 @@ export default function ProductDetailPage() {
 
           {/* Product Detail Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-12 bg-white md:rounded-3xl md:shadow-xl md:mx-4 lg:mx-8 md:p-6 lg:p-10">
-            {/* Left: Images */}
-            <div className="space-y-2 md:space-y-6">
-              {/* Main Image with Navigation */}
-              <div className="relative group">
-                <div className="aspect-square relative bg-white md:bg-gradient-to-br md:from-gray-50 md:via-white md:to-gray-50 md:rounded-3xl overflow-hidden md:shadow-lg">
-                  <img
-                    src={currentImage}
-                    alt={product.name}
-                    className="w-full h-full object-contain p-4 md:p-8 transition-transform duration-300 group-hover:scale-105"
-                  />
-
-                  {product.stock === 0 && (
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                      <span className="bg-gradient-to-r from-red-600 to-red-700 text-white text-base md:text-xl font-bold px-6 md:px-8 py-3 md:py-4 rounded-2xl shadow-2xl">
-                        ❌ Stok Habis
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Navigation Arrows - Show on mobile tap, desktop hover */}
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-xl md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                      >
-                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-xl md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                      >
-                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
-
-                  {/* Image Counter Badge */}
-                  {images.length > 1 && (
-                    <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-black/60 backdrop-blur-sm text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold">
-                      {selectedImageIndex + 1} / {images.length}
-                    </div>
-                  )}
-                </div>
-
-                {/* Navigation Dots - Mobile only */}
-                {images.length > 1 && (
-                  <div className="flex md:hidden justify-center gap-1.5 mt-3">
-                    {images.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImageIndex(index)}
-                        className={`transition-all duration-300 rounded-full ${
-                          selectedImageIndex === index
-                            ? "bg-orange-500 w-6 h-1.5"
-                            : "bg-gray-300 w-1.5 h-1.5"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Thumbnail Grid - Desktop only */}
-              {images.length > 1 && (
-                <div className="hidden md:grid grid-cols-5 gap-3">
-                  {images.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden transition-all duration-300 ${
-                        selectedImageIndex === index
-                          ? "ring-4 ring-orange-500 ring-offset-2 scale-105 shadow-lg"
-                          : "hover:ring-2 hover:ring-orange-300 hover:scale-105 shadow-sm hover:shadow-md"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-contain p-3"
-                      />
-                      {selectedImageIndex === index && (
-                        <div className="absolute inset-0 bg-orange-500/10 pointer-events-none"></div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {/* Left: Images with Zoom Gallery */}
+            <div className="p-4 md:p-0">
+              <ProductImageGallery images={images} productName={product.name} />
             </div>
 
             {/* Right: Product Info */}
