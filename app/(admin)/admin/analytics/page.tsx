@@ -1,26 +1,12 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
-
-// Force dynamic rendering to avoid SSR issues with recharts
-export const dynamic = "force-dynamic";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { useState, useEffect } from "react";
 import { TrendingUp, DollarSign, ShoppingCart, Package } from "lucide-react";
+
+// Lazy load recharts to prevent SSR issues
+let BarChart: any, Bar: any, LineChart: any, Line: any, PieChart: any, Pie: any, Cell: any;
+let XAxis: any, YAxis: any, CartesianGrid: any, Tooltip: any, Legend: any, ResponsiveContainer: any;
 
 const COLORS = [
   "#3B82F6",
@@ -46,10 +32,31 @@ export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<"7days" | "30days" | "90days" | "1year">(
     "30days"
   );
+  const [chartsLoaded, setChartsLoaded] = useState(false);
 
   const { data, isLoading } = trpc.admin.getAnalytics.useQuery({ period });
 
-  if (isLoading) {
+  // Load recharts only on client side
+  useEffect(() => {
+    import("recharts").then((recharts) => {
+      BarChart = recharts.BarChart;
+      Bar = recharts.Bar;
+      LineChart = recharts.LineChart;
+      Line = recharts.Line;
+      PieChart = recharts.PieChart;
+      Pie = recharts.Pie;
+      Cell = recharts.Cell;
+      XAxis = recharts.XAxis;
+      YAxis = recharts.YAxis;
+      CartesianGrid = recharts.CartesianGrid;
+      Tooltip = recharts.Tooltip;
+      Legend = recharts.Legend;
+      ResponsiveContainer = recharts.ResponsiveContainer;
+      setChartsLoaded(true);
+    });
+  }, []);
+
+  if (isLoading || !chartsLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
