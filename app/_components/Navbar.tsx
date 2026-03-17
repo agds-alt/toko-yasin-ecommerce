@@ -77,7 +77,7 @@ export default function Navbar() {
           {/* Logo - Bold & Prominent with Gradient */}
           <Link href="/" className="flex items-center group shrink-0">
             <span className="text-2xl sm:text-3xl font-black transition-all duration-300 group-hover:scale-105" style={{
-              background: 'linear-gradient(135deg, #FF755B 0%, #FF9A76 50%, #FF755B 100%)',
+              background: 'linear-gradient(135deg, #d4a574 0%, #f4c794 50%, #d4a574 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -85,7 +85,7 @@ export default function Navbar() {
               letterSpacing: '-0.02em',
               backgroundSize: '200% auto'
             }}>
-              TOKO BUKU ABDUL
+              QAHIRA
             </span>
           </Link>
 

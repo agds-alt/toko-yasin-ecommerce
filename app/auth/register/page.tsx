@@ -67,8 +67,8 @@ export default function RegisterPage() {
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600 mb-2" style={{fontFamily: 'Urbanist'}}>
-              TOKO BUKU ABDUL
+            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-yellow-600 mb-2" style={{fontFamily: 'Urbanist'}}>
+              QAHIRA
             </h1>
           </Link>
           <p className="text-gray-600">Buat akun baru</p>
