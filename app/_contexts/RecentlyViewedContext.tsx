@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 interface Product {
   id: string;
@@ -54,7 +54,7 @@ export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
     }
   }, [recentlyViewed, mounted]);
 
-  const addToRecentlyViewed = (product: Omit<Product, "viewedAt">) => {
+  const addToRecentlyViewed = useCallback((product: Omit<Product, "viewedAt">) => {
     setRecentlyViewed((prev) => {
       // Remove if already exists
       const filtered = prev.filter((p) => p.id !== product.id);
@@ -67,9 +67,9 @@ export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
 
       return updated;
     });
-  };
+  }, []);
 
-  const clearRecentlyViewed = () => {
+  const clearRecentlyViewed = useCallback(() => {
     setRecentlyViewed([]);
     if (typeof window !== "undefined") {
       try {
@@ -78,7 +78,7 @@ export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
         console.error("Failed to clear recently viewed products:", error);
       }
     }
-  };
+  }, []);
 
   return (
     <RecentlyViewedContext.Provider
