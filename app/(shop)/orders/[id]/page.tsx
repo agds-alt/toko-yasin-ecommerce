@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Navbar from "@/app/_components/Navbar";
 import { useSession } from "next-auth/react";
-import { Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, XCircle, Upload, Camera } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -51,6 +51,13 @@ export default function OrderDetailPage() {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
 
+  // Delivery confirmation states
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryProofFile, setDeliveryProofFile] = useState<File | null>(null);
+  const [deliveryPreview, setDeliveryPreview] = useState<string>("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [isConfirmingDelivery, setIsConfirmingDelivery] = useState(false);
+
   const { data: order, isLoading, refetch } = trpc.order.getById.useQuery(
     { orderId: orderId },
     { enabled: status === "authenticated" && !!orderId }
@@ -66,6 +73,21 @@ export default function OrderDetailPage() {
     onError: (error) => {
       alert(`❌ Error: ${error.message}`);
       setIsUploading(false);
+    },
+  });
+
+  const confirmDelivery = trpc.order.confirmDelivery.useMutation({
+    onSuccess: () => {
+      alert("✅ Pesanan berhasil dikonfirmasi sebagai diterima!");
+      setShowDeliveryModal(false);
+      setDeliveryProofFile(null);
+      setDeliveryPreview("");
+      setDeliveryNotes("");
+      refetch();
+    },
+    onError: (error) => {
+      alert(`❌ Error: ${error.message}`);
+      setIsConfirmingDelivery(false);
     },
   });
 
@@ -165,6 +187,63 @@ export default function OrderDetailPage() {
     } catch (error) {
       alert(`❌ Error upload: ${error instanceof Error ? error.message : "Unknown error"}`);
       setIsUploading(false);
+    }
+  };
+
+  const handleDeliveryImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Ukuran gambar maksimal 5MB");
+        return;
+      }
+      setDeliveryProofFile(file);
+      setDeliveryPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (!order) return;
+
+    setIsConfirmingDelivery(true);
+
+    try {
+      let deliveryImageUrl: string | undefined = undefined;
+
+      // Upload image to Cloudinary if provided
+      if (deliveryProofFile) {
+        const formData = new FormData();
+        formData.append("file", deliveryProofFile);
+        formData.append("upload_preset", "toko-yasin");
+        formData.append("folder", "delivery-proofs");
+
+        const cloudinaryRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const cloudinaryData = await cloudinaryRes.json();
+
+        if (!cloudinaryRes.ok) {
+          throw new Error("Upload ke Cloudinary gagal");
+        }
+
+        deliveryImageUrl = cloudinaryData.secure_url;
+      }
+
+      // Confirm delivery via tRPC
+      confirmDelivery.mutate({
+        orderId: order.id,
+        deliveryProofImage: deliveryImageUrl,
+        deliveryNotes: deliveryNotes.trim() || undefined,
+      });
+    } catch (error) {
+      alert(`❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setIsConfirmingDelivery(false);
     }
   };
 
@@ -387,6 +466,71 @@ export default function OrderDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Delivery Confirmation Section - Show when SHIPPED */}
+              {order.status === "SHIPPED" && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 md:rounded-2xl md:shadow-xl p-4 md:p-6 md:border-2 md:border-green-200">
+                  <h2 className="text-base md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+                    Paket Sudah Sampai?
+                  </h2>
+
+                  <p className="text-xs md:text-sm text-gray-700 mb-4">
+                    Jika paket sudah Anda terima, silakan konfirmasi penerimaan paket. Upload foto bukti penerimaan bersifat opsional.
+                  </p>
+
+                  <button
+                    onClick={() => setShowDeliveryModal(true)}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    Konfirmasi Penerimaan Paket
+                  </button>
+                </div>
+              )}
+
+              {/* Show Delivery Info when DELIVERED */}
+              {order.status === "DELIVERED" && order.deliveredAt && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 md:rounded-2xl md:shadow-xl p-4 md:p-6 md:border-2 md:border-green-200">
+                  <h2 className="text-base md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+                    ✅ Pesanan Selesai
+                  </h2>
+
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-xs md:text-sm font-semibold text-gray-700">Dikonfirmasi pada:</span>
+                      <p className="text-xs md:text-sm text-gray-600 mt-1">
+                        {new Date(order.deliveredAt).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+
+                    {order.deliveryProofImage && (
+                      <div>
+                        <span className="text-xs md:text-sm font-semibold text-gray-700">Bukti Penerimaan:</span>
+                        <img
+                          src={order.deliveryProofImage}
+                          alt="Bukti Penerimaan"
+                          className="w-full rounded-xl border-2 border-gray-300 mt-2"
+                        />
+                      </div>
+                    )}
+
+                    {order.deliveryNotes && (
+                      <div>
+                        <span className="text-xs md:text-sm font-semibold text-gray-700">Catatan:</span>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1 whitespace-pre-wrap">{order.deliveryNotes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right: Payment Info - Desktop */}
@@ -648,6 +792,128 @@ export default function OrderDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Delivery Confirmation Modal */}
+      {showDeliveryModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white p-5 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <CheckCircle className="w-6 h-6" />
+                  Konfirmasi Penerimaan Paket
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowDeliveryModal(false);
+                    setDeliveryProofFile(null);
+                    setDeliveryPreview("");
+                    setDeliveryNotes("");
+                  }}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <p className="text-sm text-green-900">
+                  <strong>Pesanan #{order?.orderNumber}</strong>
+                </p>
+                <p className="text-xs text-green-700 mt-1">
+                  Dengan mengklik tombol konfirmasi, Anda menyatakan bahwa paket telah diterima dengan baik.
+                </p>
+              </div>
+
+              {/* Optional: Upload Photo */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  📷 Upload Foto Penerimaan <span className="text-gray-400 font-normal">(Opsional)</span>
+                </label>
+                <p className="text-xs text-gray-600 mb-3">
+                  Bantu kami dengan upload foto paket yang Anda terima
+                </p>
+
+                {deliveryPreview ? (
+                  <div className="relative">
+                    <img
+                      src={deliveryPreview}
+                      alt="Preview"
+                      className="w-full rounded-xl border-2 border-gray-300"
+                    />
+                    <button
+                      onClick={() => {
+                        setDeliveryProofFile(null);
+                        setDeliveryPreview("");
+                      }}
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-colors"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDeliveryImageChange}
+                      className="hidden"
+                      id="delivery-proof-upload"
+                    />
+                    <label
+                      htmlFor="delivery-proof-upload"
+                      className="block w-full text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-4 rounded-xl border-2 border-dashed border-gray-300 cursor-pointer transition-all"
+                    >
+                      <Camera className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <span className="text-sm">Klik untuk pilih foto</span>
+                      <p className="text-xs text-gray-500 mt-1">Max 5MB</p>
+                    </label>
+                  </>
+                )}
+              </div>
+
+              {/* Optional: Notes */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  💬 Catatan <span className="text-gray-400 font-normal">(Opsional)</span>
+                </label>
+                <textarea
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                  placeholder="Contoh: Paket dalam kondisi baik, terima kasih!"
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:outline-none resize-none text-sm"
+                />
+              </div>
+
+              {/* Confirm Button */}
+              <button
+                onClick={handleConfirmDelivery}
+                disabled={isConfirmingDelivery}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                {isConfirmingDelivery ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Konfirmasi Paket Diterima
+                  </>
+                )}
+              </button>
+
+              <p className="text-xs text-center text-gray-500">
+                Upload foto dan catatan bersifat opsional. Anda dapat langsung konfirmasi tanpa upload foto.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

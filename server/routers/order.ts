@@ -539,6 +539,72 @@ export const orderRouter = router({
       return { success: true };
     }),
 
+  // Confirm delivery (customer)
+  confirmDelivery: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        deliveryProofImage: z.string().url().optional(),
+        deliveryNotes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get order to verify ownership
+      const order = await ctx.prisma.order.findUnique({
+        where: { id: input.orderId },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order not found",
+        });
+      }
+
+      // Check authorization
+      if (order.userId !== (ctx.session.user as any).id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to confirm delivery for this order",
+        });
+      }
+
+      // Check if order is in SHIPPED status
+      if (order.status !== "SHIPPED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Order must be in SHIPPED status to confirm delivery",
+        });
+      }
+
+      // Update order with delivery confirmation
+      const updatedOrder = await ctx.prisma.order.update({
+        where: { id: input.orderId },
+        data: {
+          status: "DELIVERED",
+          deliveredAt: new Date(),
+          deliveryProofImage: input.deliveryProofImage,
+          deliveryNotes: input.deliveryNotes,
+        },
+      });
+
+      // TODO: Send notification to admin about delivery confirmation
+      console.log(`✅ Order ${order.orderNumber} confirmed delivered by ${order.user.name}`);
+
+      return {
+        success: true,
+        order: updatedOrder,
+      };
+    }),
+
   // Get all orders (admin only)
   getAll: adminProcedure
     .input(
