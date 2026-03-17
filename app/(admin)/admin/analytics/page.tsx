@@ -6,7 +6,6 @@ import { TrendingUp, DollarSign, ShoppingCart, Package } from "lucide-react";
 
 // Disable static generation for this page
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 // Lazy load recharts to prevent SSR issues
 let BarChart: any, Bar: any, LineChart: any, Line: any, PieChart: any, Pie: any, Cell: any;
