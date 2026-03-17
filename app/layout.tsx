@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./_components/Providers";
-import PWAInstaller from "./_components/PWAInstaller";
 import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
-import OnlineStatus from "./_components/OnlineStatus";
-import WhatsAppFloat from "./_components/WhatsAppFloat";
-import PushNotificationManager from "./_components/PushNotificationManager";
+import {
+  OnlineStatus,
+  WhatsAppFloat,
+  PWAInstaller,
+  PushNotificationManager
+} from "./_components/ClientOnlyComponents";
 
 export const metadata: Metadata = {
   title: {

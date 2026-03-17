@@ -4,10 +4,26 @@ import { trpc } from "@/lib/trpc";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/app/_components/Navbar";
-import ProductImageGallery from "@/app/_components/ProductImageGallery";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Star, Upload, X, CheckCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+
+// Lazy load ProductImageGallery for better performance
+const ProductImageGallery = dynamic(
+  () => import("@/app/_components/ProductImageGallery"),
+  {
+    loading: () => (
+      <div className="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-500">Loading images...</p>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 export default function ProductDetailPage() {
   const params = useParams();

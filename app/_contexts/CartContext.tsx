@@ -50,24 +50,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (currentUserId !== userId) {
       setCurrentUserId(userId);
 
-      // Load cart for current user
-      const savedCart = localStorage.getItem(cartKey);
-      if (savedCart) {
-        try {
-          setItems(JSON.parse(savedCart));
-        } catch (error) {
-          console.error("Failed to load cart from localStorage:", error);
+      // Load cart for current user (only on client-side)
+      if (typeof window !== "undefined") {
+        const savedCart = localStorage.getItem(cartKey);
+        if (savedCart) {
+          try {
+            setItems(JSON.parse(savedCart));
+          } catch (error) {
+            console.error("Failed to load cart from localStorage:", error);
+            setItems([]);
+          }
+        } else {
           setItems([]);
         }
-      } else {
-        setItems([]);
       }
     }
   }, [session, status, currentUserId]);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (only on client-side)
   useEffect(() => {
-    if (mounted && currentUserId !== null) {
+    if (mounted && currentUserId !== null && typeof window !== "undefined") {
       const cartKey = getCartKey(currentUserId);
       localStorage.setItem(cartKey, JSON.stringify(items));
     }

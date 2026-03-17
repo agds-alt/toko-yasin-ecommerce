@@ -3,6 +3,9 @@
 import { trpc } from "@/lib/trpc";
 import { Users, Mail, Phone, ShoppingBag, DollarSign } from "lucide-react";
 
+// Force dynamic rendering to avoid SSR issues
+export const dynamic = "force-dynamic";
+
 export default function AdminCustomersPage() {
   const { data, isLoading } = trpc.admin.getCustomers.useQuery({
     limit: 50,

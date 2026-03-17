@@ -1,5 +1,9 @@
 "use client";
 
+// Force all pages under this layout to be dynamic (no static generation)
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";

@@ -22,15 +22,17 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
-  // Load search history from localStorage on mount
+  // Load search history from localStorage on mount (only on client-side)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setSearchHistory(JSON.parse(saved));
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          setSearchHistory(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.error("Failed to load search history:", error);
       }
-    } catch (error) {
-      console.error("Failed to load search history:", error);
     }
   }, []);
 
@@ -44,11 +46,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       // Add to beginning and limit to MAX_HISTORY
       const updated = [trimmedQuery, ...filtered].slice(0, MAX_HISTORY);
 
-      // Save to localStorage
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (error) {
-        console.error("Failed to save search history:", error);
+      // Save to localStorage (only on client-side)
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (error) {
+          console.error("Failed to save search history:", error);
+        }
       }
 
       return updated;
@@ -57,10 +61,12 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
   const clearSearchHistory = () => {
     setSearchHistory([]);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error("Failed to clear search history:", error);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        console.error("Failed to clear search history:", error);
+      }
     }
   };
 

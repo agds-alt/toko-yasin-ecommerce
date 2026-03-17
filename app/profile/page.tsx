@@ -7,7 +7,17 @@ import { useEffect, useState } from "react";
 import { User, Package, MapPin, Phone, Mail, Edit2, Save, X, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { trpc } from "@/lib/trpc";
-import AvatarUpload from "../_components/AvatarUpload";
+import dynamic from "next/dynamic";
+
+// Lazy load AvatarUpload component (contains image upload logic)
+const AvatarUpload = dynamic(() => import("../_components/AvatarUpload"), {
+  loading: () => (
+    <div className="w-32 h-32 rounded-full bg-gray-200 animate-pulse flex items-center justify-center">
+      <User className="w-16 h-16 text-gray-400" />
+    </div>
+  ),
+  ssr: false,
+});
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();

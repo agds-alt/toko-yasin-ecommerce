@@ -3,7 +3,17 @@
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect } from "react";
 import { Mail, User, Phone, MapPin, Save, AlertCircle, CheckCircle } from "lucide-react";
-import AvatarUpload from "@/app/_components/AvatarUpload";
+import dynamic from "next/dynamic";
+
+// Lazy load AvatarUpload component
+const AvatarUpload = dynamic(() => import("@/app/_components/AvatarUpload"), {
+  loading: () => (
+    <div className="flex justify-center mb-6">
+      <div className="w-32 h-32 rounded-full bg-gray-200 animate-pulse"></div>
+    </div>
+  ),
+  ssr: false,
+});
 
 export default function AdminSettingsPage() {
   const { data: profile, isLoading, refetch } = trpc.auth.getProfile.useQuery();

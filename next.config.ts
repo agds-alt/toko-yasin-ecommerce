@@ -33,13 +33,20 @@ const nextConfig: NextConfig = {
       "recharts",
       "@trpc/client",
       "@trpc/react-query",
+      "cloudinary",
+      "cloudinary-react",
+      "@tanstack/react-query",
     ],
     optimizeCss: true, // Optimize CSS for production
   },
-  // Output configuration for smaller bundles
-  output: "standalone",
+  // Removed standalone output to prevent forced static generation of admin pages
+  // output: "standalone",
   // Turbopack config to avoid error
   turbopack: {},
+  // Skip static generation for problematic pages
+  staticPageGenerationTimeout: 120,
+  // Skip prerendering admin pages to avoid SSR issues
+  skipTrailingSlashRedirect: true,
 };
 
 export default withBundleAnalyzer(nextConfig);
