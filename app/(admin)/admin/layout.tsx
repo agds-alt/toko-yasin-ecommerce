@@ -12,7 +12,7 @@ import {
   ShoppingCart,
   Package,
   Users,
-  BarChart3,
+  Bell,
   Settings,
   LogOut,
   Menu,
@@ -45,9 +45,9 @@ const menuItems = [
     href: "/admin/customers",
   },
   {
-    title: "Analytics",
-    icon: BarChart3,
-    href: "/admin/analytics",
+    title: "Notifikasi",
+    icon: Bell,
+    href: "/admin/notifications",
   },
   {
     title: "Pengaturan",
