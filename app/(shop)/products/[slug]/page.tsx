@@ -480,6 +480,25 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Info: Can't review if not purchased */}
+            {session && canReviewData && !canReviewData.canReview && canReviewData.reason === "not_purchased" && (
+              <div className="bg-blue-50 md:rounded-3xl md:shadow-lg p-4 md:p-6 border-2 border-blue-200">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 mb-1">Review Hanya Untuk Pembeli</h4>
+                    <p className="text-sm text-gray-600">
+                      {canReviewData.message || "Anda harus membeli dan menerima produk ini terlebih dahulu untuk dapat memberikan review."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Review Form */}
             {session && canReviewData?.canReview && (
               <div className="bg-white md:rounded-3xl md:shadow-xl p-4 md:p-6 lg:p-10">

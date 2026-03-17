@@ -135,18 +135,23 @@ export const reviewRouter = router({
         });
       }
 
-      // Check if user has purchased this product (for verified badge)
-      const hasPurchased = await ctx.prisma.orderItem.findFirst({
+      // Check if user has purchased and RECEIVED this product (DELIVERED status only)
+      const deliveredOrder = await ctx.prisma.orderItem.findFirst({
         where: {
           productId: input.productId,
           order: {
             userId,
-            status: {
-              in: ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"],
-            },
+            status: "DELIVERED", // Only DELIVERED orders can review
           },
         },
       });
+
+      if (!deliveredOrder) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You must purchase and receive this product before reviewing",
+        });
+      }
 
       // Create review
       const review = await ctx.prisma.review.create({
@@ -156,7 +161,7 @@ export const reviewRouter = router({
           rating: input.rating,
           comment: input.comment,
           images: input.images || [],
-          isVerified: !!hasPurchased,
+          isVerified: true, // All reviews are verified since only delivered orders can review
         },
         include: {
           user: {
@@ -279,6 +284,33 @@ export const reviewRouter = router({
 
       if (existing) {
         return { canReview: false, reason: "already_reviewed", review: existing };
+      }
+
+      // Check if user has purchased and received this product (DELIVERED status only)
+      const deliveredOrder = await ctx.prisma.orderItem.findFirst({
+        where: {
+          productId: input.productId,
+          order: {
+            userId,
+            status: "DELIVERED", // Only DELIVERED orders can review
+          },
+        },
+        include: {
+          order: {
+            select: {
+              orderNumber: true,
+              deliveredAt: true,
+            },
+          },
+        },
+      });
+
+      if (!deliveredOrder) {
+        return {
+          canReview: false,
+          reason: "not_purchased",
+          message: "Anda harus membeli dan menerima produk ini terlebih dahulu untuk dapat memberikan review"
+        };
       }
 
       return { canReview: true };
