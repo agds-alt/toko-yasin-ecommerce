@@ -42,9 +42,23 @@ export const reviewRouter = router({
         nextCursor = nextItem!.id;
       }
 
+      // Calculate average rating
+      const allReviews = await ctx.prisma.review.findMany({
+        where: { productId: input.productId },
+        select: { rating: true },
+      });
+
+      const totalReviews = allReviews.length;
+      const averageRating =
+        totalReviews > 0
+          ? allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+          : 0;
+
       return {
         reviews,
         nextCursor,
+        totalReviews,
+        averageRating: Math.round(averageRating * 10) / 10,
       };
     }),
 
