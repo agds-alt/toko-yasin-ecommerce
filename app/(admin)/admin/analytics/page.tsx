@@ -277,7 +277,10 @@ export default function AnalyticsPage() {
                 dataKey="value"
               >
                 {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || COLORS.primary} />
+                  <Cell
+                    key={`status-cell-${entry.name}-${index}`}
+                    fill={STATUS_COLORS[entry.name] || COLORS.primary}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -300,7 +303,7 @@ export default function AnalyticsPage() {
           <div className="space-y-4">
             {analytics?.topProducts.map((product, index) => (
               <div
-                key={product.id}
+                key={`product-${product.id}-${index}`}
                 className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full text-white font-bold">
