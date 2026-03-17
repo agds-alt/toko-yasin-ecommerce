@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./_components/Providers";
 import BottomNav from "./_components/BottomNav";
@@ -77,10 +78,14 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           <SplashScreen />
-          <RouteLoadingProvider />
+          <Suspense fallback={null}>
+            <RouteLoadingProvider />
+          </Suspense>
           <OnlineStatus />
           {children}
-          <BottomNav />
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
           <WhatsAppFloat />
           <PWAInstaller />
           <PushNotificationManager />
