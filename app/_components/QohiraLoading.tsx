@@ -50,7 +50,7 @@ export default function QohiraLoading({
           letterSpacing: "-0.02em",
         }}
       >
-        QOHIRA
+        Qohira
       </h2>
 
       {/* Loading spinner */}

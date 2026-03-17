@@ -70,7 +70,7 @@ export default function SplashScreen() {
             filter: "drop-shadow(0 4px 20px rgba(212, 165, 116, 0.5))",
           }}
         >
-          QOHIRA
+          Qohira
         </h1>
 
         {/* Tagline */}

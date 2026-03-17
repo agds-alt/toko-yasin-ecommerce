@@ -216,7 +216,7 @@ function HomeContent() {
                     <span className="text-xs font-bold uppercase tracking-widest px-6 py-2.5 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full" style={{
                       letterSpacing: '2px'
                     }}>
-                      QOHIRA
+                      Qohira
                     </span>
                   </div>
 
