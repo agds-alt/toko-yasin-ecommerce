@@ -71,6 +71,7 @@ export const authRouter = router({
         role: true,
         phone: true,
         address: true,
+        avatar: true,
         createdAt: true,
       },
     });
@@ -93,6 +94,7 @@ export const authRouter = router({
         email: z.string().email().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
+        avatar: z.string().url().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -119,6 +121,7 @@ export const authRouter = router({
           name: true,
           phone: true,
           address: true,
+          avatar: true,
         },
       });
 

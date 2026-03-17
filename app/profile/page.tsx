@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { User, Package, MapPin, Phone, Mail, Edit2, Save, X, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { trpc } from "@/lib/trpc";
+import AvatarUpload from "../_components/AvatarUpload";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -154,8 +155,18 @@ export default function ProfilePage() {
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border" style={{borderColor: 'var(--gray-30)'}}>
                 {/* Profile Picture */}
                 <div className="text-center mb-6">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold" style={{backgroundColor: 'var(--primary)'}}>
-                    {profileData.name?.charAt(0).toUpperCase() || 'U'}
+                  <div className="flex justify-center mb-4">
+                    <AvatarUpload
+                      currentAvatar={profileData.avatar}
+                      userName={profileData.name}
+                      onUploadSuccess={(url) => {
+                        updateProfile.mutate({ avatar: url });
+                      }}
+                      onRemove={() => {
+                        updateProfile.mutate({ avatar: "" });
+                      }}
+                      size="lg"
+                    />
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold mb-1 truncate px-2" style={{color: 'var(--gray-900)'}}>
                     {profileData.name}

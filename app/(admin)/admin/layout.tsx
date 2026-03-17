@@ -16,6 +16,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 const menuItems = [
   {
@@ -60,6 +61,11 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Get user profile for avatar (only if logged in as admin)
+  const { data: profileData } = trpc.auth.getProfile.useQuery(undefined, {
+    enabled: !!session && (session?.user as any)?.role === "ADMIN",
+  });
 
   // Check if user is admin
   if (status === "loading") {
@@ -193,9 +199,17 @@ export default function AdminLayout({
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                {session?.user?.name?.charAt(0).toUpperCase() || "A"}
-              </div>
+              {profileData?.avatar ? (
+                <img
+                  src={profileData.avatar}
+                  alt={session?.user?.name || "Admin"}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-purple-400"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                  {session?.user?.name?.charAt(0).toUpperCase() || "A"}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 text-sm truncate">
                   {session?.user?.name}

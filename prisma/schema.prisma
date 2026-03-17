@@ -20,6 +20,7 @@ model User {
   role         Role          @default(CUSTOMER)
   phone        String?
   address      String?
+  avatar       String?       // Cloudinary URL for profile picture
   orders       Order[]
   cart         Cart?
   wishlistItems WishlistItem[]

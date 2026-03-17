@@ -25,6 +25,11 @@ export default function Navbar() {
   const { data: categories } = trpc.product.getCategories.useQuery();
   const [localSelectedCategory, setLocalSelectedCategory] = useState("all");
 
+  // Get user profile for avatar
+  const { data: profileData } = trpc.auth.getProfile.useQuery(undefined, {
+    enabled: !!session,
+  });
+
   // Get wishlist count
   const { data: wishlistData } = trpc.wishlist.getAll.useQuery(undefined, {
     enabled: !!session,
@@ -238,8 +243,19 @@ export default function Navbar() {
               className="flex flex-col items-center p-2 px-3 transition-all duration-300 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 rounded-xl group"
               style={{color: 'var(--gray-60)'}}
             >
-              <User className="w-5 h-5 mb-0.5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
-              <span className="text-xs font-medium">Akun</span>
+              {session && profileData?.avatar ? (
+                <img
+                  src={profileData.avatar}
+                  alt={profileData.name || "User"}
+                  className="w-8 h-8 rounded-full object-cover border-2 transition-transform group-hover:scale-110"
+                  style={{borderColor: 'var(--primary)'}}
+                />
+              ) : (
+                <User className="w-5 h-5 mb-0.5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
+              )}
+              {!session || !profileData?.avatar ? (
+                <span className="text-xs font-medium">Akun</span>
+              ) : null}
             </Link>
 
             {/* Wishlist */}

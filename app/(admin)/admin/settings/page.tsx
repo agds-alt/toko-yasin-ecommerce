@@ -3,6 +3,7 @@
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { Mail, User, Phone, MapPin, Save, AlertCircle, CheckCircle } from "lucide-react";
+import AvatarUpload from "@/app/_components/AvatarUpload";
 
 export default function AdminSettingsPage() {
   const { data: profile, isLoading, refetch } = trpc.auth.getProfile.useQuery();
@@ -134,6 +135,21 @@ export default function AdminSettingsPage() {
               Edit Profil
             </button>
           )}
+        </div>
+
+        {/* Avatar Upload */}
+        <div className="flex justify-center mb-8">
+          <AvatarUpload
+            currentAvatar={profile?.avatar}
+            userName={profile?.name}
+            onUploadSuccess={(url) => {
+              updateProfile.mutateAsync({ avatar: url });
+            }}
+            onRemove={() => {
+              updateProfile.mutateAsync({ avatar: "" });
+            }}
+            size="lg"
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
