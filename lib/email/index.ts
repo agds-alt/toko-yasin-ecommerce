@@ -75,14 +75,19 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
 /**
  * Send new order notification to admin
+ * @param adminEmail - Admin email from database (optional, fallback to env)
  */
-export async function sendNewOrderNotificationToAdmin(data: OrderEmailData) {
+export async function sendNewOrderNotificationToAdmin(
+  data: OrderEmailData,
+  adminEmail?: string
+) {
   if (!isEmailConfigured()) {
     console.warn("Email service not configured, skipping admin notification");
     return { success: false, skipped: true };
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@tokoyasin.com";
+  // Use provided admin email, fallback to env, then default
+  const targetEmail = adminEmail || process.env.ADMIN_EMAIL || "admin@tokoyasin.com";
 
   const html = `
 <!DOCTYPE html>
@@ -124,7 +129,7 @@ export async function sendNewOrderNotificationToAdmin(data: OrderEmailData) {
   `;
 
   return await sendEmail({
-    to: adminEmail,
+    to: targetEmail,
     subject: `🛒 Pesanan Baru #${data.orderNumber}`,
     html,
   });

@@ -90,11 +90,26 @@ export const authRouter = router({
     .input(
       z.object({
         name: z.string().min(2).optional(),
+        email: z.string().email().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // If email is being updated, check if it's already taken
+      if (input.email) {
+        const existingUser = await ctx.prisma.user.findUnique({
+          where: { email: input.email },
+        });
+
+        if (existingUser && existingUser.id !== (ctx.session.user as any).id) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email sudah digunakan oleh user lain",
+          });
+        }
+      }
+
       const user = await ctx.prisma.user.update({
         where: { id: (ctx.session.user as any).id },
         data: input,

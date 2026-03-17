@@ -44,6 +44,11 @@ const menuItems = [
     icon: BarChart3,
     href: "/admin/analytics",
   },
+  {
+    title: "Pengaturan",
+    icon: Settings,
+    href: "/admin/settings",
+  },
 ];
 
 export default function AdminLayout({

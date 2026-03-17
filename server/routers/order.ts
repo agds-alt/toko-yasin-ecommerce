@@ -156,20 +156,29 @@ export const orderRouter = router({
           shippingPhone: input.shippingPhone,
         }).catch((err) => console.error("Email send failed:", err));
 
+        // Get admin email from database (first admin user)
+        const adminUser = await ctx.prisma.user.findFirst({
+          where: { role: "ADMIN" },
+          select: { email: true },
+        });
+
         // Send notification to admin (async, non-blocking)
-        sendNewOrderNotificationToAdmin({
-          orderNumber: order.orderNumber,
-          customerName: orderDetails.user.name || "Customer",
-          customerEmail: orderDetails.user.email,
-          totalAmount: Number(order.totalAmount),
-          items: orderDetails.items.map((item) => ({
-            name: item.product.name,
-            quantity: item.quantity,
-            price: Number(item.price),
-          })),
-          shippingAddress: input.shippingAddress,
-          shippingPhone: input.shippingPhone,
-        }).catch((err) => console.error("Admin email failed:", err));
+        sendNewOrderNotificationToAdmin(
+          {
+            orderNumber: order.orderNumber,
+            customerName: orderDetails.user.name || "Customer",
+            customerEmail: orderDetails.user.email,
+            totalAmount: Number(order.totalAmount),
+            items: orderDetails.items.map((item) => ({
+              name: item.product.name,
+              quantity: item.quantity,
+              price: Number(item.price),
+            })),
+            shippingAddress: input.shippingAddress,
+            shippingPhone: input.shippingPhone,
+          },
+          adminUser?.email // Pass admin email from database
+        ).catch((err) => console.error("Admin email failed:", err));
       }
 
       return order;
