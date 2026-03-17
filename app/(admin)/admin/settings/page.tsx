@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, User, Phone, MapPin, Save, AlertCircle, CheckCircle } from "lucide-react";
 import AvatarUpload from "@/app/_components/AvatarUpload";
 
@@ -17,7 +17,7 @@ export default function AdminSettingsPage() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Initialize form when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData({
         name: profile.name || "",
@@ -26,7 +26,7 @@ export default function AdminSettingsPage() {
         address: profile.address || "",
       });
     }
-  });
+  }, [profile]);
 
   const updateProfile = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
