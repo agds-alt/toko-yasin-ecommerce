@@ -2,6 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import { Users, Mail, Phone, ShoppingBag, DollarSign } from "lucide-react";
+import { QohiraLoadingInline } from "@/app/_components/QohiraLoading";
 
 // Force dynamic rendering to avoid SSR issues
 export const dynamic = "force-dynamic";
@@ -12,14 +13,7 @@ export default function AdminCustomersPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat data pelanggan...</p>
-        </div>
-      </div>
-    );
+    return <QohiraLoadingInline message="Memuat data pelanggan..." />;
   }
 
   const customers = data?.customers || [];

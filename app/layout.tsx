@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./_components/Providers";
 import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
+import RouteLoadingProvider from "./_components/RouteLoadingProvider";
 import {
   OnlineStatus,
   WhatsAppFloat,
@@ -76,6 +77,7 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           <SplashScreen />
+          <RouteLoadingProvider />
           <OnlineStatus />
           {children}
           <BottomNav />
