@@ -154,4 +154,40 @@ export const wishlistRouter = router({
 
       return { inWishlist: !!wishlistItem };
     }),
+
+  // Clear all wishlist items
+  clearAll: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.wishlistItem.deleteMany({
+      where: {
+        userId: (ctx.session.user as any).id,
+      },
+    });
+
+    return { success: true };
+  }),
+
+  // Get wishlist product IDs for bulk add to cart
+  getProductIds: protectedProcedure.query(async ({ ctx }) => {
+    const wishlistItems = await ctx.prisma.wishlistItem.findMany({
+      where: {
+        userId: (ctx.session.user as any).id,
+      },
+      select: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            images: true,
+            stock: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    return wishlistItems
+      .map((item) => item.product)
+      .filter((product) => product.stock > 0); // Only return in-stock products
+  }),
 });

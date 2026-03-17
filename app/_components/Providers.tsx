@@ -6,6 +6,7 @@ import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { CartProvider } from "../_contexts/CartContext";
 import { SearchProvider } from "../_contexts/SearchContext";
+import { RecentlyViewedProvider } from "../_contexts/RecentlyViewedContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <CartProvider>
             <SearchProvider>
-              {children}
+              <RecentlyViewedProvider>
+                {children}
+              </RecentlyViewedProvider>
             </SearchProvider>
           </CartProvider>
         </QueryClientProvider>

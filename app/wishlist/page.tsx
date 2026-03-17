@@ -2,7 +2,7 @@
 
 import Navbar from "../_components/Navbar";
 import Link from "next/link";
-import { Heart, ShoppingCart, Trash2, ArrowLeft } from "lucide-react";
+import { Heart, ShoppingCart, Trash2, ArrowLeft, ShoppingBag, Trash } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -39,6 +39,20 @@ export default function WishlistPage() {
     },
   });
 
+  const clearAllWishlist = trpc.wishlist.clearAll.useMutation({
+    onSuccess: () => {
+      refetch();
+      setToastMessage("Semua produk dihapus dari wishlist!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    },
+  });
+
+  const { data: wishlistProducts } = trpc.wishlist.getProductIds.useQuery(
+    undefined,
+    { enabled: status === "authenticated" }
+  );
+
   const handleRemove = async (productId: string) => {
     setRemovingId(productId);
     await removeFromWishlist.mutateAsync({ productId });
@@ -60,6 +74,36 @@ export default function WishlistPage() {
       setAddingToCartId(null);
       setShowToast(false);
     }, 2000);
+  };
+
+  const handleMoveAllToCart = () => {
+    if (!wishlistProducts || wishlistProducts.length === 0) {
+      setToastMessage("Tidak ada produk yang tersedia!");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      return;
+    }
+
+    // Add all in-stock products to cart
+    wishlistProducts.forEach((product) => {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        image: product.images[0] || "/placeholder.png",
+        quantity: 1,
+      });
+    });
+
+    setToastMessage(`${wishlistProducts.length} produk ditambahkan ke keranjang!`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleClearAll = () => {
+    if (confirm("Yakin ingin menghapus semua produk dari wishlist?")) {
+      clearAllWishlist.mutate();
+    }
   };
 
   if (isLoading || status === "loading") {
@@ -92,12 +136,38 @@ export default function WishlistPage() {
               <span className="text-sm font-medium">Kembali</span>
             </button>
 
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-gray-900">
-              ❤️ Wishlist Saya
-            </h1>
-            <p className="text-sm md:text-base text-gray-600">
-              {wishlistItems?.length || 0} produk dalam wishlist
-            </p>
+            <div className="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-gray-900">
+                  ❤️ Wishlist Saya
+                </h1>
+                <p className="text-sm md:text-base text-gray-600">
+                  {wishlistItems?.length || 0} produk dalam wishlist
+                </p>
+              </div>
+
+              {/* Bulk Actions */}
+              {wishlistItems && wishlistItems.length > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleMoveAllToCart}
+                    disabled={!wishlistProducts || wishlistProducts.length === 0}
+                    className="px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 text-white text-sm font-semibold rounded-full transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span className="hidden md:inline">Pindah Semua</span>
+                    <span className="md:hidden">Semua</span>
+                  </button>
+                  <button
+                    onClick={handleClearAll}
+                    className="px-4 py-2 border-2 border-red-300 hover:bg-red-50 text-red-600 text-sm font-semibold rounded-full transition-all flex items-center gap-2"
+                  >
+                    <Trash className="w-4 h-4" />
+                    <span className="hidden md:inline">Hapus Semua</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Empty State */}

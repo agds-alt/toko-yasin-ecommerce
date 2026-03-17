@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Navbar from "@/app/_components/Navbar";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, Upload, X, CheckCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRecentlyViewed } from "@/app/_contexts/RecentlyViewedContext";
 
 // Lazy load ProductImageGallery for better performance
 const ProductImageGallery = dynamic(
@@ -30,6 +31,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = params.slug as string;
   const { data: session } = useSession();
+  const { addToRecentlyViewed } = useRecentlyViewed();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -59,6 +61,24 @@ export default function ProductDetailPage() {
     { productId: product?.id || "" },
     { enabled: !!product?.id && !!session }
   );
+  const { data: relatedProducts } = trpc.product.getRelatedProducts.useQuery(
+    { productId: product?.id || "", limit: 6 },
+    { enabled: !!product?.id }
+  );
+
+  // Track product view
+  useEffect(() => {
+    if (product) {
+      addToRecentlyViewed({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: Number(product.price),
+        images: product.images,
+        categoryName: product.category?.name,
+      });
+    }
+  }, [product, addToRecentlyViewed]);
 
   const addToCart = trpc.cart.addItem.useMutation({
     onSuccess: () => {
@@ -741,6 +761,50 @@ export default function ProductDetailPage() {
                 <p className="text-sm md:text-base text-gray-600">
                   Jadilah yang pertama memberikan ulasan untuk produk ini!
                 </p>
+              </div>
+            )}
+
+            {/* Related Products Section */}
+            {relatedProducts && relatedProducts.length > 0 && (
+              <div className="bg-white md:rounded-3xl md:shadow-xl p-6 md:p-10">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
+                  Produk Terkait
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                  {relatedProducts.map((relatedProduct) => (
+                    <div
+                      key={relatedProduct.id}
+                      className="group cursor-pointer"
+                      onClick={() => router.push(`/products/${relatedProduct.slug}`)}
+                    >
+                      <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-3 relative">
+                        {relatedProduct.images && relatedProduct.images.length > 0 ? (
+                          <Image
+                            src={relatedProduct.images[0]}
+                            alt={relatedProduct.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-gray-400 text-3xl">📦</span>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 text-sm md:text-base line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
+                          {relatedProduct.name}
+                        </h4>
+                        <p className="text-xs md:text-sm text-gray-500 mb-2">
+                          {relatedProduct.category?.name || "Produk"}
+                        </p>
+                        <p className="text-lg md:text-xl font-bold text-blue-600">
+                          Rp {Number(relatedProduct.price).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "./_components/Navbar";
+import RecentlyViewed from "./_components/RecentlyViewed";
 import { useState, useEffect, Suspense } from "react";
 import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart, Search, Filter, X, SlidersHorizontal, Grid3x3, List } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -977,6 +978,11 @@ function HomeContent() {
               </div>
             </div>
           )}
+
+          {/* Recently Viewed Section */}
+          <div className="mt-12 md:mt-16">
+            <RecentlyViewed />
+          </div>
         </div>
       </section>
 

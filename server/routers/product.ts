@@ -271,4 +271,185 @@ export const productRouter = router({
         orderBy: { createdAt: "asc" },
       });
     }),
+
+  // ===== PRODUCT RECOMMENDATIONS =====
+
+  // Get related products (same category)
+  getRelatedProducts: publicProcedure
+    .input(
+      z.object({
+        productId: z.string(),
+        limit: z.number().min(1).max(20).default(6),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { productId, limit } = input;
+
+      // Get current product to find its category
+      const currentProduct = await ctx.prisma.product.findUnique({
+        where: { id: productId },
+        select: { categoryId: true },
+      });
+
+      if (!currentProduct || !currentProduct.categoryId) {
+        return [];
+      }
+
+      // Find products in the same category, excluding the current product
+      const relatedProducts = await ctx.prisma.product.findMany({
+        where: {
+          categoryId: currentProduct.categoryId,
+          id: { not: productId },
+          isActive: true,
+        },
+        take: limit,
+        include: {
+          category: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return relatedProducts;
+    }),
+
+  // Get personalized recommendations based on user history
+  getRecommendations: publicProcedure
+    .input(
+      z.object({
+        userId: z.string().optional(),
+        productId: z.string().optional(), // For product page recommendations
+        limit: z.number().min(1).max(20).default(8),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { userId, productId, limit } = input;
+
+      // Strategy 1: If viewing a product, recommend similar products
+      if (productId) {
+        const currentProduct = await ctx.prisma.product.findUnique({
+          where: { id: productId },
+          select: { categoryId: true, price: true },
+        });
+
+        if (currentProduct && currentProduct.categoryId) {
+          // Find products in same category with similar price range (±30%)
+          const priceMin = Number(currentProduct.price) * 0.7;
+          const priceMax = Number(currentProduct.price) * 1.3;
+
+          const recommendations = await ctx.prisma.product.findMany({
+            where: {
+              categoryId: currentProduct.categoryId,
+              id: { not: productId },
+              isActive: true,
+              price: {
+                gte: priceMin,
+                lte: priceMax,
+              },
+            },
+            take: limit,
+            include: {
+              category: true,
+              reviews: {
+                select: { rating: true },
+              },
+            },
+            orderBy: { createdAt: "desc" },
+          });
+
+          // Sort by average rating
+          return recommendations.sort((a, b) => {
+            const avgA = a.reviews.length
+              ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
+              : 0;
+            const avgB = b.reviews.length
+              ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
+              : 0;
+            return avgB - avgA;
+          });
+        }
+      }
+
+      // Strategy 2: If user is logged in, recommend based on purchase/wishlist history
+      if (userId) {
+        // Get categories from user's order history
+        const userOrders = await ctx.prisma.order.findMany({
+          where: { userId },
+          include: {
+            items: {
+              include: {
+                product: {
+                  select: { categoryId: true },
+                },
+              },
+            },
+          },
+          take: 10,
+          orderBy: { createdAt: "desc" },
+        });
+
+        // Get unique category IDs from order history
+        const categoryIds = [
+          ...new Set(
+            userOrders.flatMap((order) =>
+              order.items
+                .map((item) => item.product.categoryId)
+                .filter((id): id is string => id !== null)
+            )
+          ),
+        ];
+
+        if (categoryIds.length > 0) {
+          // Get products from user's preferred categories
+          const recommendations = await ctx.prisma.product.findMany({
+            where: {
+              categoryId: { in: categoryIds },
+              isActive: true,
+            },
+            take: limit,
+            include: {
+              category: true,
+              reviews: {
+                select: { rating: true },
+              },
+            },
+            orderBy: { createdAt: "desc" },
+          });
+
+          // Sort by average rating
+          return recommendations.sort((a, b) => {
+            const avgA = a.reviews.length
+              ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
+              : 0;
+            const avgB = b.reviews.length
+              ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
+              : 0;
+            return avgB - avgA;
+          });
+        }
+      }
+
+      // Strategy 3: Default - return popular products (most reviewed/rated)
+      const popularProducts = await ctx.prisma.product.findMany({
+        where: { isActive: true },
+        take: limit,
+        include: {
+          category: true,
+          reviews: {
+            select: { rating: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // Sort by review count and rating
+      return popularProducts.sort((a, b) => {
+        const scoreA = a.reviews.length * 2 + (a.reviews.length > 0
+          ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
+          : 0);
+        const scoreB = b.reviews.length * 2 + (b.reviews.length > 0
+          ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
+          : 0);
+        return scoreB - scoreA;
+      });
+    }),
 });
