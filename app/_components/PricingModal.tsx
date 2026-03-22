@@ -197,7 +197,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
             Hubungi kami untuk mendiskusikan kebutuhan spesifik bisnis Anda
           </p>
           <a
-            href="https://wa.me/6281234567890"
+            href="https://wa.me/6281221575053"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-8 py-4 bg-gradient-to-r from-[#d4a574] to-[#f4c794] text-[#1a2b4a] font-bold rounded-full hover:shadow-xl hover:scale-105 transition-all"
