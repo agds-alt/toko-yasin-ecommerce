@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "./_components/Navbar";
 import RecentlyViewed from "./_components/RecentlyViewed";
+import PricingModal from "./_components/PricingModal";
 import { useState, useEffect, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart, Search, Filter, X, SlidersHorizontal, Grid3x3, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Eye, Star, Minus, Plus, ShoppingCart, Search, Filter, X, SlidersHorizontal, Grid3x3, List, DollarSign } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "./_contexts/CartContext";
@@ -69,6 +70,9 @@ function HomeContent() {
     imageUrl: '',
     productName: ''
   });
+
+  // Pricing modal state
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
 
   // Trigger flying animation
   const triggerFlyingAnimation = (
@@ -238,32 +242,53 @@ function HomeContent() {
                     {slide.subtitle}
                   </p>
 
-                  {/* CTA Button */}
-                  <a
-                    href={slide.buttonLink}
-                    className="inline-flex items-center gap-3 text-white font-bold text-base sm:text-lg transition-all shadow-2xl hover:shadow-2xl"
-                    style={{
-                      backgroundColor: 'var(--primary)',
-                      borderRadius: 'var(--radius-full)',
-                      padding: '1em 2.5em',
-                      textDecoration: 'none',
-                      transform: 'translateY(0)',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(255, 117, 91, 0.5)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
-                    }}
-                  >
-                    <span>{slide.buttonText}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </a>
+                  {/* CTA Buttons */}
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a
+                      href={slide.buttonLink}
+                      className="inline-flex items-center gap-3 text-white font-bold text-base sm:text-lg transition-all shadow-2xl hover:shadow-2xl"
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        borderRadius: 'var(--radius-full)',
+                        padding: '1em 2.5em',
+                        textDecoration: 'none',
+                        transform: 'translateY(0)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(255, 117, 91, 0.5)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                      }}
+                    >
+                      <span>{slide.buttonText}</span>
+                    </a>
+
+                    <button
+                      onClick={() => setPricingModalOpen(true)}
+                      className="inline-flex items-center gap-3 text-[#1a2b4a] font-bold text-base sm:text-lg transition-all shadow-2xl hover:shadow-2xl bg-gradient-to-r from-[#d4a574] to-[#f4c794] hover:from-[#f4c794] hover:to-[#d4a574]"
+                      style={{
+                        borderRadius: 'var(--radius-full)',
+                        padding: '1em 2.5em',
+                        transform: 'translateY(0)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(212, 165, 116, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                      }}
+                    >
+                      <DollarSign className="w-5 h-5" />
+                      <span>Lihat Harga</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1237,6 +1262,12 @@ function HomeContent() {
           animation: scaleIn 0.3s ease-out;
         }
       `}</style>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={pricingModalOpen}
+        onClose={() => setPricingModalOpen(false)}
+      />
     </>
   );
 }

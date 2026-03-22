@@ -11,6 +11,7 @@ import {
   PWAInstaller,
   PushNotificationManager
 } from "./_components/ClientOnlyComponents";
+import { PreventFlashStyle } from "./prevent-flash";
 
 export const metadata: Metadata = {
   title: {
@@ -69,13 +70,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
+        <PreventFlashStyle />
         <link rel="icon" href="/icons/icon-192x192.png" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <meta name="theme-color" content="#d4a574" />
+        <meta name="theme-color" content="#1a2b4a" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>
           <SplashScreen />
           <Suspense fallback={null}>

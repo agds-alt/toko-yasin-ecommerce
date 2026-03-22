@@ -33,6 +33,7 @@ export default function QohiraLoading({
           fill
           className="object-contain drop-shadow-2xl"
           priority
+          unoptimized
         />
       </div>
 

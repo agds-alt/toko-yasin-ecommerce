@@ -90,6 +90,13 @@ h1, h2, h3, h4, h5, h6 {
 html {
   /* Prevent overscroll bounce on mobile */
   overscroll-behavior: none;
+  /* Prevent white flash on initial load - will be overridden by inline style in head */
+  background: linear-gradient(135deg, #1a2b4a 0%, #2a3b5a 100%);
+}
+
+/* Prevent white background flash during loading */
+html, body {
+  min-height: 100vh;
 }
 
 @layer utilities {

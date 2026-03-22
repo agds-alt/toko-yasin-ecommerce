@@ -54,6 +54,7 @@ export default function SplashScreen() {
             fill
             className="object-contain drop-shadow-2xl"
             priority
+            unoptimized
           />
         </div>
 
