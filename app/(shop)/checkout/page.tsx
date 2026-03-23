@@ -4,7 +4,7 @@ import Navbar from "@/app/_components/Navbar";
 import { useCart } from "@/app/_contexts/CartContext";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { ShoppingBag, MapPin, Phone, MessageSquare, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -13,17 +13,14 @@ export default function CheckoutPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Redirect if not authenticated
-  if (status === "unauthenticated") {
-    router.push("/auth/login");
-    return null;
-  }
-
-  // Redirect if cart is empty
-  if (items.length === 0) {
-    router.push("/cart");
-    return null;
-  }
+  // Redirect if not authenticated or cart is empty
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+    } else if (items.length === 0) {
+      router.push("/cart");
+    }
+  }, [status, items.length, router]);
 
   const [formData, setFormData] = useState({
     shippingAddress: "",

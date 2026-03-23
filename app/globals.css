@@ -60,11 +60,9 @@
   --transition-default: 0.3s;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* DISABLE dark mode - force light mode for consistency */
+html {
+  color-scheme: light only;
 }
 
 body {
@@ -85,6 +83,17 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.3;
   color: var(--gray-900);
   word-spacing: 1px;
+}
+
+/* Force light mode styling for all input fields */
+input, textarea, select {
+  color-scheme: light;
+  color: var(--gray-900) !important;
+  background-color: #ffffff !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--gray-60) !important;
 }
 
 html {
