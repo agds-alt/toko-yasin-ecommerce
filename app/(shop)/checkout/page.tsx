@@ -59,9 +59,10 @@ export default function CheckoutPage() {
     try {
       await createOrder.mutateAsync({
         items: items.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           quantity: item.quantity,
           price: item.price,
+          variant: item.variant,
         })),
         totalAmount: totalPrice,
         shippingAddress: formData.shippingAddress,
