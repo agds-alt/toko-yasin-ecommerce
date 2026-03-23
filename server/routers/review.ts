@@ -6,6 +6,29 @@
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { PrismaClient } from "@prisma/client";
+
+// Helper function to update product rating statistics
+async function updateProductRatingStats(prisma: PrismaClient, productId: string) {
+  const reviews = await prisma.review.findMany({
+    where: { productId },
+    select: { rating: true },
+  });
+
+  const totalReviews = reviews.length;
+  const averageRating =
+    totalReviews > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+      : 0;
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: {
+      averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+      reviewCount: totalReviews,
+    },
+  });
+}
 
 export const reviewRouter = router({
   // Get all reviews for a product
@@ -173,6 +196,9 @@ export const reviewRouter = router({
         },
       });
 
+      // Update product rating statistics
+      await updateProductRatingStats(ctx.prisma, input.productId);
+
       return review;
     }),
 
@@ -226,6 +252,11 @@ export const reviewRouter = router({
         },
       });
 
+      // Update product rating statistics if rating changed
+      if (input.rating !== undefined) {
+        await updateProductRatingStats(ctx.prisma, review.productId);
+      }
+
       return updated;
     }),
 
@@ -259,9 +290,14 @@ export const reviewRouter = router({
         });
       }
 
+      const productId = review.productId;
+
       await ctx.prisma.review.delete({
         where: { id: input.reviewId },
       });
+
+      // Update product rating statistics
+      await updateProductRatingStats(ctx.prisma, productId);
 
       return { success: true };
     }),

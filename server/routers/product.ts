@@ -171,6 +171,79 @@ export const productRouter = router({
     });
   }),
 
+  // Get homepage data (optimized - single endpoint for multiple queries)
+  getHomepageData: publicProcedure
+    .input(
+      z.object({
+        featuredLimit: z.number().min(1).max(20).default(8),
+        categoryId: z.string().optional(),
+        search: z.string().optional(),
+        minPrice: z.number().optional(),
+        maxPrice: z.number().optional(),
+        sortBy: z.enum(["newest", "price_asc", "price_desc", "name_asc", "name_desc"]).optional().default("newest"),
+        limit: z.number().min(1).max(100).default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { featuredLimit, categoryId, search, minPrice, maxPrice, sortBy, limit } = input;
+
+      // Build orderBy
+      let orderBy: any = { createdAt: "desc" };
+      if (sortBy === "price_asc") orderBy = { price: "asc" };
+      else if (sortBy === "price_desc") orderBy = { price: "desc" };
+      else if (sortBy === "name_asc") orderBy = { name: "asc" };
+      else if (sortBy === "name_desc") orderBy = { name: "desc" };
+
+      // Fetch all data in parallel
+      const [products, categories, featuredProducts] = await Promise.all([
+        // Main products
+        ctx.prisma.product.findMany({
+          take: limit,
+          where: {
+            isActive: true,
+            ...(categoryId && { categoryId }),
+            ...(search && {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+              ],
+            }),
+            ...(minPrice !== undefined && { price: { gte: minPrice } }),
+            ...(maxPrice !== undefined && { price: { lte: maxPrice } }),
+          },
+          include: {
+            category: true,
+          },
+          orderBy,
+        }),
+
+        // Categories
+        ctx.prisma.category.findMany({
+          orderBy: { name: "asc" },
+        }),
+
+        // Featured/recommended products
+        ctx.prisma.product.findMany({
+          take: featuredLimit,
+          where: { isActive: true },
+          include: {
+            category: true,
+          },
+          orderBy: [
+            { reviewCount: "desc" },
+            { averageRating: "desc" },
+            { createdAt: "desc" },
+          ],
+        }),
+      ]);
+
+      return {
+        products,
+        categories,
+        featuredProducts,
+      };
+    }),
+
   // Create category (admin only)
   createCategory: adminProcedure
     .input(
@@ -349,23 +422,15 @@ export const productRouter = router({
             take: limit,
             include: {
               category: true,
-              reviews: {
-                select: { rating: true },
-              },
             },
-            orderBy: { createdAt: "desc" },
+            orderBy: [
+              { averageRating: "desc" },  // Sort by rating first
+              { reviewCount: "desc" },     // Then by review count
+              { createdAt: "desc" },       // Then by newest
+            ],
           });
 
-          // Sort by average rating
-          return recommendations.sort((a, b) => {
-            const avgA = a.reviews.length
-              ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
-              : 0;
-            const avgB = b.reviews.length
-              ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
-              : 0;
-            return avgB - avgA;
-          });
+          return recommendations;
         }
       }
 
@@ -408,23 +473,15 @@ export const productRouter = router({
             take: limit,
             include: {
               category: true,
-              reviews: {
-                select: { rating: true },
-              },
             },
-            orderBy: { createdAt: "desc" },
+            orderBy: [
+              { averageRating: "desc" },
+              { reviewCount: "desc" },
+              { createdAt: "desc" },
+            ],
           });
 
-          // Sort by average rating
-          return recommendations.sort((a, b) => {
-            const avgA = a.reviews.length
-              ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
-              : 0;
-            const avgB = b.reviews.length
-              ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
-              : 0;
-            return avgB - avgA;
-          });
+          return recommendations;
         }
       }
 
@@ -434,22 +491,14 @@ export const productRouter = router({
         take: limit,
         include: {
           category: true,
-          reviews: {
-            select: { rating: true },
-          },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+          { reviewCount: "desc" },      // Most reviewed first
+          { averageRating: "desc" },    // Then highest rated
+          { createdAt: "desc" },        // Then newest
+        ],
       });
 
-      // Sort by review count and rating
-      return popularProducts.sort((a, b) => {
-        const scoreA = a.reviews.length * 2 + (a.reviews.length > 0
-          ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
-          : 0);
-        const scoreB = b.reviews.length * 2 + (b.reviews.length > 0
-          ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
-          : 0);
-        return scoreB - scoreA;
-      });
+      return popularProducts;
     }),
 });

@@ -55,12 +55,17 @@ model Product {
   variants      ProductVariant[]
   isActive      Boolean        @default(true)
   hasVariants   Boolean        @default(false) // If true, use variants for stock/price
+  averageRating Float?         @default(0)    // Computed field for performance
+  reviewCount   Int            @default(0)    // Computed field for performance
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@index([slug])
   @@index([categoryId])
   @@index([isActive])
+  @@index([categoryId, isActive, price])  // Composite index for filtering
+  @@index([isActive, price])              // For price-based queries
+  @@index([averageRating])                // For sorting by rating
 }
 
 // Product Variants (e.g., Size: S/M/L, Color: Red/Blue)
@@ -139,6 +144,8 @@ model Order {
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  @@index([userId, status])      // Composite index for user's orders by status
+  @@index([userId, createdAt])   // For user's orders sorted by date
 }
 
 model OrderItem {
