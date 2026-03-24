@@ -87,7 +87,7 @@ export default function CheckoutPage() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-gray-50 pb-32 md:pb-12 md:py-12">
+      <div className="min-h-screen bg-gray-50 pb-64 md:pb-12 md:py-12">
         <div className="max-w-5xl mx-auto px-2 sm:px-6 lg:px-8">
           {/* Header - Compact on mobile */}
           <div className="mb-4 md:mb-8 px-2 md:px-0 pt-2 md:pt-0">
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <p className="text-xs md:text-sm mt-3 text-gray-600">
+                    <p className="text-xs md:text-sm mt-3 mb-6 md:mb-3 text-gray-600">
                       Anda akan diarahkan ke halaman upload bukti pembayaran setelah order dibuat
                     </p>
                   </div>
@@ -358,34 +358,41 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Mobile spacer to clear sticky checkout button */}
+                <div className="h-32"></div>
               </div>
             </div>
           </form>
 
           {/* Sticky Bottom Action Bar - Mobile Only */}
           <div
-            className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-4 shadow-2xl z-40"
-            style={{paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))'}}
+            className="lg:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40"
+            style={{
+              bottom: '4.5rem', /* 72px above BottomNav */
+            }}
           >
-            <div className="flex items-center gap-3">
-              {/* Total Price */}
-              <div className="flex-1">
-                <p className="text-xs text-gray-600">Total Pembayaran</p>
-                <p className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-red-600">
-                  Rp {totalPrice.toLocaleString("id-ID")}
-                </p>
+            <div className="px-4 py-3">
+              {/* Total & Button in Column for better spacing */}
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs text-gray-600">Total Pembayaran</p>
+                  <p className="text-base font-bold text-orange-600">
+                    Rp {totalPrice.toLocaleString("id-ID")}
+                  </p>
+                </div>
               </div>
 
-              {/* Place Order Button */}
+              {/* Full Width Button */}
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 active:from-orange-800 active:to-red-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 active:from-orange-800 active:to-red-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span className="text-sm">Loading...</span>
+                    <span className="text-sm">Memproses...</span>
                   </div>
                 ) : (
                   <span className="text-sm">Buat Pesanan</span>
