@@ -45,6 +45,7 @@ model Product {
   description   String?
   price         Decimal        @db.Decimal(10, 2)
   stock         Int            @default(0)
+  weight        Float?         @default(0) // Berat produk dalam kg (untuk kalkulasi ongkir)
   images        String[]       // PostgreSQL supports array
   category      Category?      @relation(fields: [categoryId], references: [id])
   categoryId    String?
@@ -131,6 +132,7 @@ model Order {
   notes           String?
   trackingNumber      String?   // Nomor resi pengiriman
   courier             String?   // Nama kurir (JNE, J&T, SiCepat, dll)
+  totalWeight         Float?    // Total berat paket dalam kg (auto-calculated from products)
   shippedAt           DateTime? // Waktu pengiriman
   deliveredAt         DateTime? // Waktu konfirmasi penerimaan customer
   deliveryProofImage  String?   // URL foto bukti penerimaan (opsional)

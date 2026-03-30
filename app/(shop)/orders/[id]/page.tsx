@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Navbar from "@/app/_components/Navbar";
 import { useSession } from "next-auth/react";
-import { Package, Truck, CheckCircle, Clock, XCircle, Upload, Camera, Star } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, XCircle, Upload, Camera, Star, ExternalLink } from "lucide-react";
+import { getTrackingUrl, hasPublicTracking, getTrackingInstructions } from "@/lib/tracking";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -427,6 +428,12 @@ export default function OrderDetailPage() {
                             <span className="font-semibold text-blue-800 flex-shrink-0">No. Resi:</span>
                             <span className="text-blue-700 font-mono font-semibold break-all select-all">{order.trackingNumber}</span>
                           </div>
+                          {order.totalWeight && order.totalWeight > 0 && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-800">Berat Paket:</span>
+                              <span className="text-blue-700 font-medium">{order.totalWeight} kg</span>
+                            </div>
+                          )}
                           {order.shippedAt && (
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-blue-800">Dikirim:</span>
@@ -444,11 +451,24 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="bg-blue-100 border border-blue-300 rounded-lg p-2 md:p-3 mt-3">
-                      <p className="text-[10px] md:text-xs text-blue-800">
-                        💡 <strong>Cara Lacak Paket:</strong> Salin nomor resi di atas dan kunjungi website resmi kurir <strong>{order.courier}</strong> untuk melacak posisi paket Anda.
-                      </p>
-                    </div>
+                    {/* Tracking Link/Instructions */}
+                    {hasPublicTracking(order.courier) ? (
+                      <a
+                        href={getTrackingUrl(order.courier, order.trackingNumber)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-3"
+                      >
+                        <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="text-xs md:text-sm">Lacak Paket di Website {order.courier}</span>
+                      </a>
+                    ) : (
+                      <div className="bg-blue-100 border border-blue-300 rounded-lg p-2 md:p-3 mt-3">
+                        <p className="text-[10px] md:text-xs text-blue-800">
+                          💡 {getTrackingInstructions(order.courier)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

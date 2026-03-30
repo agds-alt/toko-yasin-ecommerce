@@ -253,6 +253,7 @@ export const adminRouter = router({
         orderId: z.string(),
         trackingNumber: z.string().min(1, "Nomor resi harus diisi"),
         courier: z.string().min(1, "Nama kurir harus diisi"),
+        totalWeight: z.number().positive("Berat harus lebih dari 0"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -262,6 +263,7 @@ export const adminRouter = router({
         data: {
           trackingNumber: input.trackingNumber,
           courier: input.courier,
+          totalWeight: input.totalWeight,
           shippedAt: new Date(),
           status: "SHIPPED",
         },

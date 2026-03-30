@@ -16,6 +16,7 @@ export default function EditProductPage() {
     description: "",
     price: "",
     stock: "",
+    weight: "",
     categoryId: "",
     isActive: true,
   });
@@ -65,6 +66,7 @@ export default function EditProductPage() {
         description: product.description || "",
         price: product.price.toString(),
         stock: product.stock.toString(),
+        weight: product.weight ? product.weight.toString() : "",
         categoryId: product.categoryId || "",
         isActive: product.isActive,
       });
@@ -127,6 +129,7 @@ export default function EditProductPage() {
       description: formData.description || undefined,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
+      weight: formData.weight ? parseFloat(formData.weight) : undefined,
       images: images,
       categoryId: formData.categoryId || undefined,
       isActive: formData.isActive,
@@ -250,8 +253,8 @@ export default function EditProductPage() {
             />
           </div>
 
-          {/* Price & Stock */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Price, Stock & Weight */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Harga (Rp) <span className="text-red-500">*</span>
@@ -283,6 +286,26 @@ export default function EditProductPage() {
                 min="0"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Berat (kg) ⚖️
+              </label>
+              <input
+                type="number"
+                value={formData.weight}
+                onChange={(e) =>
+                  setFormData({ ...formData, weight: e.target.value })
+                }
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                placeholder="0.5"
+                min="0"
+                step="0.01"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Untuk kalkulasi ongkir
+              </p>
             </div>
           </div>
 

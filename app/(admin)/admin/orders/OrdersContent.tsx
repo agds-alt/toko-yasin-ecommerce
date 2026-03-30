@@ -33,6 +33,7 @@ export default function AdminOrdersPage() {
   const [verifyNotes, setVerifyNotes] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [courier, setCourier] = useState("");
+  const [totalWeight, setTotalWeight] = useState<number>(0);
 
   const { data: ordersData, isLoading, refetch } = trpc.order.getAll.useQuery(
     {
@@ -72,6 +73,7 @@ export default function AdminOrdersPage() {
       setSelectedOrder(null);
       setTrackingNumber("");
       setCourier("");
+      setTotalWeight(0);
       refetch();
     },
     onError: (error) => {
@@ -269,6 +271,13 @@ export default function AdminOrdersPage() {
                             <button
                               onClick={() => {
                                 setSelectedOrder(order);
+                                // Auto-calculate total weight from order items
+                                const packagingWeight = 0.2; // 200g default packaging
+                                const productsWeight = order.items.reduce((sum: number, item: any) => {
+                                  const itemWeight = (item.product.weight || 0) * item.quantity;
+                                  return sum + itemWeight;
+                                }, 0);
+                                setTotalWeight(Number((productsWeight + packagingWeight).toFixed(2)));
                                 setShowTrackingModal(true);
                               }}
                               className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-all"
@@ -388,6 +397,13 @@ export default function AdminOrdersPage() {
                     <button
                       onClick={() => {
                         setSelectedOrder(order);
+                        // Auto-calculate total weight from order items
+                        const packagingWeight = 0.2; // 200g default packaging
+                        const productsWeight = order.items.reduce((sum: number, item: any) => {
+                          const itemWeight = (item.product.weight || 0) * item.quantity;
+                          return sum + itemWeight;
+                        }, 0);
+                        setTotalWeight(Number((productsWeight + packagingWeight).toFixed(2)));
                         setShowTrackingModal(true);
                       }}
                       className="px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
@@ -626,6 +642,11 @@ export default function AdminOrdersPage() {
 
                       <p className="text-[10px] md:text-sm text-gray-600">
                         Qty: {item.quantity}
+                        {item.product.weight > 0 && (
+                          <span className="ml-2 text-blue-600 font-medium">
+                            • {item.product.weight} kg/pcs
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -670,6 +691,24 @@ export default function AdminOrdersPage() {
                   placeholder="Masukkan nomor resi pengiriman"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
+                  Total Berat Paket (kg) <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={totalWeight}
+                  onChange={(e) => setTotalWeight(parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  placeholder="0.00"
+                />
+                <p className="text-[10px] md:text-xs text-gray-500 mt-1">
+                  💡 Auto-calculated dari berat produk + 0.2 kg packaging (bisa diedit)
+                </p>
+              </div>
             </div>
 
             {/* Info Alert */}
@@ -687,6 +726,7 @@ export default function AdminOrdersPage() {
                   setSelectedOrder(null);
                   setTrackingNumber("");
                   setCourier("");
+                  setTotalWeight(0);
                 }}
                 className="flex-1 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
               >
@@ -702,10 +742,15 @@ export default function AdminOrdersPage() {
                     alert("Masukkan nomor resi");
                     return;
                   }
+                  if (totalWeight <= 0) {
+                    alert("Masukkan berat paket yang valid (minimal 0.01 kg)");
+                    return;
+                  }
                   uploadTracking.mutate({
                     orderId: selectedOrder.id,
                     trackingNumber: trackingNumber.trim(),
                     courier: courier.trim(),
+                    totalWeight: totalWeight,
                   });
                 }}
                 disabled={uploadTracking.isPending}
