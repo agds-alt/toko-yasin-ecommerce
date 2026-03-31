@@ -270,7 +270,6 @@ export default function CreateProductPage() {
                 Untuk kalkulasi ongkir
               </p>
             </div>
-            </div>
           </div>
 
           {/* Category */}
