@@ -167,7 +167,7 @@ export default function LoginPage() {
         <div className="mt-6 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4 text-sm">
           <p className="font-semibold text-orange-900 mb-2">🔐 Demo Account:</p>
           <p className="text-orange-700">
-            <strong>Admin:</strong> admin@ecommerce.com / admin123
+            <strong>Admin:</strong> Achmadmoeslem@gmail.com / admin123
           </p>
           <p className="text-orange-700">
             <strong>Customer:</strong> customer@example.com / customer123
