@@ -56,3 +56,5 @@ binance-algo-bot/data/
 
 # OS
 Thumbs.db
+/.docdex/
+/.docdex-state/

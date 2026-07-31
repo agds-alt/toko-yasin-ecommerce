@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useCart } from "../_contexts/CartContext";
 import { useSearch } from "../_contexts/SearchContext";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -233,6 +234,9 @@ export default function Navbar() {
 
           {/* Right Side Icons - Desktop Only */}
           <div className="flex items-center gap-1 -mr-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Account */}
             <Link
               href={session ? "/profile" : "/auth/login"}
@@ -370,6 +374,9 @@ export default function Navbar() {
               </span>
             )}
           </Link>
+
+          {/* Theme Toggle (Mobile) */}
+          <ThemeToggle />
 
           {/* Cart Icon */}
           <Link

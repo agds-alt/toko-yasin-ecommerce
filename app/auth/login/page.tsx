@@ -48,6 +48,41 @@ export default function LoginPage() {
     }
   };
 
+  const handleAutoLogin = async (demoEmail: string, demoPassword: string) => {
+    setError("");
+    setIsLoading(true);
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+
+    try {
+      const result = await signIn("credentials", {
+        email: demoEmail,
+        password: demoPassword,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Email atau password salah");
+        setIsLoading(false);
+      } else {
+        // Get session to check user role
+        const response = await fetch("/api/auth/session");
+        const session = await response.json();
+
+        // Redirect based on role
+        if (session?.user?.role === "ADMIN") {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
+        router.refresh();
+      }
+    } catch (err) {
+      setError("Terjadi kesalahan. Silakan coba lagi.");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
@@ -165,13 +200,27 @@ export default function LoginPage() {
 
         {/* Demo Credentials (for testing) */}
         <div className="mt-6 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4 text-sm">
-          <p className="font-semibold text-orange-900 mb-2">🔐 Demo Account:</p>
-          <p className="text-orange-700">
-            <strong>Admin:</strong> Achmadmoeslem@gmail.com / admin123
-          </p>
-          <p className="text-orange-700">
-            <strong>Customer:</strong> customer@example.com / customer123
-          </p>
+          <p className="font-semibold text-orange-900 mb-2">🔐 Demo Account (Auto Login):</p>
+          <div className="space-y-2 mt-2">
+            <button
+              type="button"
+              onClick={() => handleAutoLogin("Achmadmoeslem@gmail.com", "admin123")}
+              disabled={isLoading}
+              className="w-full flex items-center justify-between px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-900 rounded-xl transition-colors font-medium disabled:opacity-50"
+            >
+              <span>🔑 Admin</span>
+              <span className="text-xs text-orange-700">Achmadmoeslem@gmail.com</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAutoLogin("customer@example.com", "customer123")}
+              disabled={isLoading}
+              className="w-full flex items-center justify-between px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-900 rounded-xl transition-colors font-medium disabled:opacity-50"
+            >
+              <span>👤 Customer</span>
+              <span className="text-xs text-orange-700">customer@example.com</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

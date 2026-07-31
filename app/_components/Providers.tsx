@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { CartProvider } from "../_contexts/CartContext";
 import { SearchProvider } from "../_contexts/SearchContext";
 import { RecentlyViewedProvider } from "../_contexts/RecentlyViewedContext";
+import { ThemeProvider } from "../_contexts/ThemeContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -16,13 +17,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <CartProvider>
-            <SearchProvider>
-              <RecentlyViewedProvider>
-                {children}
-              </RecentlyViewedProvider>
-            </SearchProvider>
-          </CartProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <SearchProvider>
+                <RecentlyViewedProvider>
+                  {children}
+                </RecentlyViewedProvider>
+              </SearchProvider>
+            </CartProvider>
+          </ThemeProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </SessionProvider>
