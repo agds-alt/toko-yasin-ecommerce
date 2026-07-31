@@ -10,7 +10,17 @@ import { RecentlyViewedProvider } from "../_contexts/RecentlyViewedContext";
 import { ThemeProvider } from "../_contexts/ThemeContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 30, // 30 seconds default staleTime
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
   const [trpcClient] = useState(() => getTRPCClient());
 
   return (

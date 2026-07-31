@@ -29,23 +29,17 @@ function HomeContent() {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const { data, isLoading } = trpc.product.getAll.useQuery({
+  const { data: homepageData, isLoading } = trpc.product.getHomepageData.useQuery({
     search: searchQuery || undefined,
     categoryId: contextCategory,
     minPrice,
     maxPrice,
     sortBy,
+    limit: 20,
+    featuredLimit: 8,
   });
 
-  // Fetch categories for filter
-  const { data: categoriesData } = trpc.product.getCategories.useQuery();
-  const categories = categoriesData || [];
-
-  // Fetch recommendations - random products
-  const { data: recommendationsData } = trpc.product.getAll.useQuery({
-    limit: 8,
-    sortBy: "newest",
-  });
+  const categories = homepageData?.categories || [];
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -182,7 +176,7 @@ function HomeContent() {
     );
   }
 
-  const products = data?.products || [];
+  const products = homepageData?.products || [];
 
   return (
     <>
@@ -203,10 +197,13 @@ function HomeContent() {
             >
               {/* Background Image */}
               <div className="absolute inset-0">
-                <img
+                <Image
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-cover"
                 />
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-black/30"></div>
@@ -520,10 +517,12 @@ function HomeContent() {
 
                   {/* Product Image with Quick View */}
                   <Link href={`/products/${product.slug}`} className="block relative bg-gray-50 h-40 sm:h-56 lg:h-72">
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-contain p-3 sm:p-4 transition-transform group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-contain p-3 sm:p-4 transition-transform group-hover:scale-105"
                     />
 
                     {/* Quick View - Shows on Hover */}
@@ -726,11 +725,13 @@ function HomeContent() {
                 >
                   <div className="flex flex-col sm:flex-row gap-4 p-4">
                     {/* Left: Image */}
-                    <Link href={`/products/${product.slug}`} className="relative bg-gray-50 rounded-lg overflow-hidden sm:w-48 sm:h-48 flex-shrink-0 group">
-                      <img
+                    <Link href={`/products/${product.slug}`} className="relative bg-gray-50 rounded-lg overflow-hidden w-full h-48 sm:w-48 sm:h-48 flex-shrink-0 group">
+                      <Image
                         src={imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-contain p-4"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 192px"
+                        className="object-contain p-4"
                       />
 
                       {/* Quick View Button */}
@@ -911,7 +912,7 @@ function HomeContent() {
           )}
 
           {/* Recommendations Section - Mungkin Kamu Suka */}
-          {recommendationsData && recommendationsData.products.length > 0 && (
+          {homepageData?.featuredProducts && homepageData.featuredProducts.length > 0 && (
             <div className="mt-12 md:mt-16">
               <div className="mb-6 md:mb-8">
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
@@ -923,7 +924,7 @@ function HomeContent() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                {recommendationsData.products.slice(0, 8).map((product) => {
+                {homepageData.featuredProducts.slice(0, 8).map((product) => {
                   const images = product.images || [];
                   const imageUrl = images[0] || "/placeholder.png";
                   const isWishlisted = wishlistItems.has(product.id);
@@ -935,11 +936,13 @@ function HomeContent() {
                     >
                       {/* Product Image */}
                       <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-white p-3 md:p-4">
-                        <Link href={`/products/${product.slug}`}>
-                          <img
+                        <Link href={`/products/${product.slug}`} className="block relative w-full h-full">
+                          <Image
                             src={imageUrl}
                             alt={product.name}
-                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-contain group-hover:scale-110 transition-transform duration-500"
                           />
                         </Link>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Navbar from "@/app/_components/Navbar";
 import { trpc } from "@/lib/trpc";
 import { Star, Filter, X, Grid3x3, Rows3 } from "lucide-react";
@@ -249,11 +250,13 @@ export default function ProductsPage() {
                       className="bg-white rounded-2xl shadow-sm border overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:scale-[1.01] flex"
                       style={{ borderColor: "var(--gray-30)" }}
                     >
-                      <div className="w-32 md:w-48 h-32 md:h-48 bg-gray-50 flex-shrink-0">
-                        <img
+                      <div className="w-32 md:w-48 h-32 md:h-48 bg-gray-50 flex-shrink-0 relative">
+                        <Image
                           src={imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-contain p-3"
+                          fill
+                          sizes="(max-width: 768px) 128px, 192px"
+                          className="object-contain p-3"
                         />
                       </div>
                       <div className="flex-1 p-4 flex flex-col justify-between">
@@ -300,10 +303,12 @@ export default function ProductsPage() {
                     style={{ borderColor: "var(--gray-30)" }}
                   >
                     <div className="aspect-square bg-gray-50 overflow-hidden relative">
-                      <img
+                      <Image
                         src={imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-contain p-3 md:p-4 transition-transform group-hover:scale-110"
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-contain p-3 md:p-4 transition-transform group-hover:scale-110"
                       />
                       {product.stock === 0 && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

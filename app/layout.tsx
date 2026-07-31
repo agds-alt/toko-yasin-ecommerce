@@ -1,6 +1,25 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Inter, Urbanist, DM_Sans } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const urbanist = Urbanist({
+  subsets: ["latin"],
+  variable: "--font-urbanist",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 import { Providers } from "./_components/Providers";
 import BottomNav from "./_components/BottomNav";
 import SplashScreen from "./_components/SplashScreen";
@@ -70,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="id" className={`${inter.variable} ${urbanist.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head>
         <PreventFlashStyle />
         <link rel="icon" href="/icons/icon-192x192.png" />
